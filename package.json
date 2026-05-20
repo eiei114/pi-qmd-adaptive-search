@@ -3,6 +3,23 @@
   "version": "0.1.0",
   "description": "Project-local semantic file discovery with qmd, fallback search, and local adaptive feedback.",
   "type": "commonjs",
+  "keywords": [
+    "qmd",
+    "semantic-search",
+    "file-discovery",
+    "notes",
+    "docs",
+    "cli",
+    "adaptive-search"
+  ],
+  "homepage": "https://github.com/keisu/qmd-adaptive-search#readme",
+  "bugs": {
+    "url": "https://github.com/keisu/qmd-adaptive-search/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/keisu/qmd-adaptive-search.git"
+  },
   "bin": {
     "qmd-adaptive-search": "bin/qmd-adaptive-search.js",
     "qmd-adaptive": "bin/qmd-adaptive-search.js"
@@ -11,14 +28,18 @@
   "files": [
     "bin/",
     "src/",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "test": "node --test",
-    "smoke": "node bin/qmd-adaptive-search.js --help"
+    "smoke": "node bin/qmd-adaptive-search.js --help",
+    "check": "npm test && npm run smoke"
   },
   "engines": {
     "node": ">=20"
   },
+  "author": "Keisu",
   "license": "MIT"
 }

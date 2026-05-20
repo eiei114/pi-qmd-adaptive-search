@@ -1,9 +1,9 @@
 # pi-qmd-adaptive-search
 
 [![npm version](https://img.shields.io/npm/v/pi-qmd-adaptive-search?color=cb3837&label=npm)](https://www.npmjs.com/package/pi-qmd-adaptive-search)
-[![GitHub](https://img.shields.io/badge/GitHub-keisu%2Fpi--qmd--adaptive--search-blue)](https://github.com/keisu/pi-qmd-adaptive-search)
+[![GitHub](https://img.shields.io/badge/GitHub-eiei114%2Fpi--qmd--adaptive--search-blue)](https://github.com/eiei114/pi-qmd-adaptive-search)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![CI](https://github.com/keisu/pi-qmd-adaptive-search/actions/workflows/ci.yml/badge.svg)](https://github.com/keisu/pi-qmd-adaptive-search/actions/workflows/ci.yml)
+[![CI](https://github.com/eiei114/pi-qmd-adaptive-search/actions/workflows/ci.yml/badge.svg)](https://github.com/eiei114/pi-qmd-adaptive-search/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/status-MVP%200.1.0-orange)](#versioning-policy)
 [![Pi package](https://img.shields.io/badge/pi-package-purple)](#pi-installation)
@@ -71,14 +71,14 @@ Or add to `.pi/settings.json`:
 From GitHub:
 
 ```bash
-pi install git:github.com/keisu/pi-qmd-adaptive-search
+pi install git:github.com/eiei114/pi-qmd-adaptive-search
 ```
 
 Or add to `.pi/settings.json`:
 
 ```json
 {
-  "packages": ["git:github.com/keisu/pi-qmd-adaptive-search"]
+  "packages": ["git:github.com/eiei114/pi-qmd-adaptive-search"]
 }
 ```
 

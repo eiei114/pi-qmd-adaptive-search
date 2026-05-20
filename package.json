@@ -16,11 +16,11 @@
   ],
   "homepage": "https://www.npmjs.com/package/pi-qmd-adaptive-search",
   "bugs": {
-    "url": "https://github.com/keisu/pi-qmd-adaptive-search/issues"
+    "url": "https://github.com/eiei114/pi-qmd-adaptive-search/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/keisu/pi-qmd-adaptive-search.git"
+    "url": "https://github.com/eiei114/pi-qmd-adaptive-search.git"
   },
   "bin": {
     "qmd-adaptive-search": "bin/qmd-adaptive-search.js",

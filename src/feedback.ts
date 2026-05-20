@@ -1,10 +1,9 @@
-'use strict';
-
-const path = require('node:path');
-const { randomUUID } = require('node:crypto');
-const { initProject, loadConfig, paths } = require('./config');
-const { readJson, writeJson, appendJsonLine, toPosix } = require('./fs-utils');
-const { tokenize } = require('./search');
+import path from 'node:path';
+import fs from 'node:fs';
+import { randomUUID } from 'node:crypto';
+import { initProject, loadConfig, paths } from './config.js';
+import { readJson, writeJson, appendJsonLine, toPosix } from './fs-utils.js';
+import { tokenize } from './search.js';
 
 function normalizeSelected(input) {
   const values = input.selectedPaths || (input.selectedPath ? [input.selectedPath] : []);
@@ -38,7 +37,7 @@ function addAliases(root, anchors, selectedPaths) {
   writeJson(p.learnedAliases, current);
 }
 
-function recordFeedback(input, options = {}) {
+function recordFeedback(input, options: any = {}) {
   const root = options.root || process.cwd();
   initProject(root);
   loadConfig(root);
@@ -74,18 +73,17 @@ function recordFeedback(input, options = {}) {
   return { ok: true, selectedPaths, anchors, warnings };
 }
 
-function reviewSuggestions(options = {}) {
+function reviewSuggestions(options: any = {}) {
   const root = options.root || process.cwd();
   initProject(root);
   const p = paths(root);
-  const fs = require('node:fs');
   const suggestions = fs.existsSync(p.pendingSuggestions)
     ? fs.readFileSync(p.pendingSuggestions, 'utf8').split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line))
     : [];
   return { count: suggestions.length, suggestions };
 }
 
-function approveSuggestions(options = {}) {
+function approveSuggestions(options: any = {}) {
   const root = options.root || process.cwd();
   const p = paths(root);
   const review = reviewSuggestions({ root });
@@ -102,8 +100,8 @@ function approveSuggestions(options = {}) {
   }
   writeJson(p.sharedAliases, sharedAliases);
   writeJson(p.sharedBoosts, sharedBoosts);
-  require('node:fs').writeFileSync(p.pendingSuggestions, '', 'utf8');
+  fs.writeFileSync(p.pendingSuggestions, '', 'utf8');
   return { ok: true, approved: review.suggestions.length };
 }
 
-module.exports = { recordFeedback, reviewSuggestions, approveSuggestions };
+export { recordFeedback, reviewSuggestions, approveSuggestions };

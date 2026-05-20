@@ -1,6 +1,7 @@
 node_modules/
 coverage/
 dist/
+*.tgz
 .qmd-adaptive-search/local/
 .qmd-adaptive-search/logs/
 *.log

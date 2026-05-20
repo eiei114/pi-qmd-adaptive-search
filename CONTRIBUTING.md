@@ -10,6 +10,7 @@
 ```bash
 npm install
 npm test
+npm run build
 ```
 
 This package currently has no runtime dependencies.
@@ -19,6 +20,7 @@ This package currently has no runtime dependencies.
 ```bash
 npm test
 npm run smoke
+npm run build
 npm run check
 ```
 

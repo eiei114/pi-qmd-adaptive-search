@@ -1,9 +1,7 @@
-'use strict';
-
-const { spawnSync } = require('node:child_process');
-const path = require('node:path');
-const fs = require('node:fs');
-const { toPosix } = require('./fs-utils');
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+import fs from 'node:fs';
+import { toPosix } from './fs-utils.js';
 
 function commandCandidates(config) {
   const candidates = [];
@@ -12,7 +10,7 @@ function commandCandidates(config) {
   return candidates;
 }
 
-function runCommand(command, args, options = {}) {
+function runCommand(command, args, options: any = {}) {
   const [bin, ...prefix] = command;
   const bins = process.platform === 'win32' && !path.extname(bin) ? [bin, `${bin}.cmd`, `${bin}.exe`] : [bin];
   let last;
@@ -83,4 +81,4 @@ function installInstructions() {
   ].join('\n');
 }
 
-module.exports = { detectQmd, qmdSearch, parseQmdSearchOutput, installInstructions };
+export { detectQmd, qmdSearch, parseQmdSearchOutput, installInstructions };

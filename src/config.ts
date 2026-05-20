@@ -1,9 +1,7 @@
-'use strict';
-
-const fs = require('node:fs');
-const path = require('node:path');
-const { DEFAULT_CONFIG, PRESETS } = require('./defaults');
-const { ensureDir, readJson, writeJson, updateGitignore, deepMerge } = require('./fs-utils');
+import fs from 'node:fs';
+import path from 'node:path';
+import { DEFAULT_CONFIG, PRESETS } from './defaults.js';
+import { ensureDir, readJson, writeJson, updateGitignore, deepMerge } from './fs-utils.js';
 
 const CONFIG_DIR = '.qmd-adaptive-search';
 
@@ -25,7 +23,7 @@ function paths(root) {
   };
 }
 
-function initProject(root = process.cwd(), options = {}) {
+function initProject(root = process.cwd(), options: any = {}) {
   const p = paths(root);
   ensureDir(p.base);
   ensureDir(p.local);
@@ -60,7 +58,7 @@ function initProject(root = process.cwd(), options = {}) {
   return { ok: true, configDir: CONFIG_DIR, created, gitignoreUpdated };
 }
 
-function loadConfig(root = process.cwd(), options = {}) {
+function loadConfig(root = process.cwd(), options: any = {}) {
   const p = paths(root);
   if (!fs.existsSync(p.config)) {
     if (options.autoInit === false) throw new Error(`qmd-adaptive-search config not found at ${p.config}`);
@@ -69,7 +67,7 @@ function loadConfig(root = process.cwd(), options = {}) {
   return deepMerge(DEFAULT_CONFIG, readJson(p.config, {}));
 }
 
-function applyPreset(root, presetName, options = {}) {
+function applyPreset(root, presetName, options: any = {}) {
   const preset = PRESETS[presetName];
   if (!preset) throw new Error(`Unknown preset: ${presetName}. Use one of: ${Object.keys(PRESETS).join(', ')}`);
   initProject(root);
@@ -80,4 +78,4 @@ function applyPreset(root, presetName, options = {}) {
   return { preset: presetName, reset: !!options.reset, before: current, after: next };
 }
 
-module.exports = { CONFIG_DIR, paths, initProject, loadConfig, applyPreset };
+export { CONFIG_DIR, paths, initProject, loadConfig, applyPreset };

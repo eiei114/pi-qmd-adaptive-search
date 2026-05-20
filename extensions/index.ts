@@ -1,7 +1,6 @@
-'use strict';
-
-const { Type } = require('typebox');
-const {
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
+import { Type } from 'typebox';
+import {
   adaptiveSearch,
   recordFeedback,
   adaptiveStatus,
@@ -10,7 +9,7 @@ const {
   reviewSuggestions,
   approveSuggestions,
   installInstructions
-} = require('../src');
+} from '../dist/src/index.js';
 
 function textResult(text, details = {}) {
   return { content: [{ type: 'text', text }], details };
@@ -20,7 +19,7 @@ function jsonResult(value) {
   return textResult(JSON.stringify(value, null, 2), value);
 }
 
-function registerTools(pi) {
+function registerTools(pi: ExtensionAPI) {
   pi.registerTool({
     name: 'qmd_adaptive_search',
     label: 'QMD Adaptive Search',
@@ -68,7 +67,7 @@ function registerTools(pi) {
   });
 }
 
-function registerCommands(pi) {
+function registerCommands(pi: ExtensionAPI) {
   pi.registerCommand('qmd-adaptive-init', {
     description: 'Create lightweight qmd-adaptive-search config in the current project',
     handler: async (_args, ctx) => {
@@ -104,9 +103,7 @@ function registerCommands(pi) {
   });
 }
 
-module.exports = function qmdAdaptiveSearchExtension(pi) {
+export default function qmdAdaptiveSearchExtension(pi: ExtensionAPI) {
   registerTools(pi);
   registerCommands(pi);
-};
-
-module.exports.default = module.exports;
+}

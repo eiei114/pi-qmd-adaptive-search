@@ -1,7 +1,5 @@
-'use strict';
-
-const fs = require('node:fs');
-const path = require('node:path');
+import fs from 'node:fs';
+import path from 'node:path';
 
 function toPosix(value) {
   return String(value).replace(/\\/g, '/');
@@ -72,4 +70,4 @@ function deepMerge(base, patch) {
   return output;
 }
 
-module.exports = { toPosix, projectPath, ensureDir, readJson, writeJson, appendJsonLine, readJsonLines, updateGitignore, deepMerge };
+export { toPosix, projectPath, ensureDir, readJson, writeJson, appendJsonLine, readJsonLines, updateGitignore, deepMerge };

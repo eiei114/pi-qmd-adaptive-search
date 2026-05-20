@@ -2,7 +2,7 @@
   "name": "pi-qmd-adaptive-search",
   "version": "0.1.0",
   "description": "Project-local semantic file discovery with qmd, fallback search, and local adaptive feedback.",
-  "type": "commonjs",
+  "type": "module",
   "keywords": [
     "pi-package",
     "pi-extension",
@@ -26,29 +26,43 @@
     "qmd-adaptive-search": "bin/qmd-adaptive-search.js",
     "qmd-adaptive": "bin/qmd-adaptive-search.js"
   },
-  "main": "src/index.js",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "files": [
     "bin/",
     "extensions/",
     "src/",
+    "dist/src/",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
   ],
   "scripts": {
-    "test": "node --test",
-    "smoke": "node bin/qmd-adaptive-search.js --help",
-    "check": "npm test && npm run smoke"
+    "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build",
+    "test": "npm run build && node --test dist/test/*.test.js",
+    "smoke": "npm run build && node bin/qmd-adaptive-search.js --help",
+    "check": "npm test && npm run smoke && npm pack --dry-run"
   },
   "engines": {
     "node": ">=20"
   },
   "author": "Keisu",
   "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "typescript": "^6.0.3"
+  },
   "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
     "typebox": "*"
   },
+  "peerDependenciesMeta": {
+    "@earendil-works/pi-coding-agent": {
+      "optional": true
+    }
+  },
   "pi": {
-    "extensions": ["./extensions/index.js"]
+    "extensions": ["./extensions/index.ts"]
   }
 }

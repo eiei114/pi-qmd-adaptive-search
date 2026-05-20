@@ -283,14 +283,16 @@ Not persisted:
 
 ```text
 bin/                    CLI entrypoint
-src/                    Library implementation
-  cli.js                command routing
-  config.js             config/bootstrap/presets
-  qmd.js                qmd detection and search bridge
-  search.js             fallback search, ranking, result shaping
-  feedback.js           local learning and review promotion
-  status.js             status snapshot
-test/                   node:test coverage
+src/                    TypeScript library implementation
+  cli.ts                command routing
+  config.ts             config/bootstrap/presets
+  qmd.ts                qmd detection and search bridge
+  search.ts             fallback search, ranking, result shaping
+  feedback.ts           local learning and review promotion
+  status.ts             status snapshot
+extensions/index.ts     Pi extension entrypoint
+dist/                   Compiled npm runtime output
+test/                   TypeScript node:test coverage
 ```
 
 ## Development
@@ -305,6 +307,7 @@ Commands:
 ```bash
 npm test
 npm run smoke
+npm run build
 node bin/qmd-adaptive-search.js search "product decisions" --max 3
 ```
 

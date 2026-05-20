@@ -1,15 +1,13 @@
-'use strict';
-
-const fs = require('node:fs');
-const { initProject, loadConfig, paths } = require('./config');
-const { detectQmd } = require('./qmd');
-const { readJson, readJsonLines } = require('./fs-utils');
+import fs from 'node:fs';
+import { initProject, loadConfig, paths } from './config.js';
+import { detectQmd } from './qmd.js';
+import { readJson, readJsonLines } from './fs-utils.js';
 
 function countObject(file, key) {
   return Object.keys(readJson(file, { [key]: {} })[key] || {}).length;
 }
 
-function adaptiveStatus(options = {}) {
+function adaptiveStatus(options: any = {}) {
   const root = options.root || process.cwd();
   initProject(root);
   const config = loadConfig(root);
@@ -42,4 +40,4 @@ function adaptiveStatus(options = {}) {
   };
 }
 
-module.exports = { adaptiveStatus };
+export { adaptiveStatus };

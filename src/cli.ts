@@ -1,17 +1,15 @@
-'use strict';
-
-const readline = require('node:readline/promises');
-const { stdin: input, stdout: output } = require('node:process');
-const { initProject, applyPreset } = require('./config');
-const { adaptiveSearch } = require('./search');
-const { recordFeedback, reviewSuggestions, approveSuggestions } = require('./feedback');
-const { adaptiveStatus } = require('./status');
-const { detectQmd, installInstructions } = require('./qmd');
-const { loadConfig } = require('./config');
-const { spawnSync } = require('node:child_process');
+import readline from 'node:readline/promises';
+import process, { stdin as input, stdout as output } from 'node:process';
+import { initProject, applyPreset } from './config.js';
+import { adaptiveSearch } from './search.js';
+import { recordFeedback, reviewSuggestions, approveSuggestions } from './feedback.js';
+import { adaptiveStatus } from './status.js';
+import { detectQmd, installInstructions } from './qmd.js';
+import { loadConfig } from './config.js';
+import { spawnSync } from 'node:child_process';
 
 function parseArgs(argv) {
-  const out = { _: [] };
+  const out: any = { _: [] };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (!arg.startsWith('--')) out._.push(arg);
@@ -100,4 +98,4 @@ async function runCli(argv) {
   throw new Error(`Unknown command: ${command}`);
 }
 
-module.exports = { runCli, parseArgs };
+export { runCli, parseArgs };

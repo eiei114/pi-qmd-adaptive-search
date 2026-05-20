@@ -1,11 +1,9 @@
-'use strict';
-
-const fs = require('node:fs');
-const path = require('node:path');
-const { randomUUID } = require('node:crypto');
-const { initProject, loadConfig, paths } = require('./config');
-const { qmdSearch, installInstructions } = require('./qmd');
-const { readJson, writeJson, toPosix } = require('./fs-utils');
+import fs from 'node:fs';
+import path from 'node:path';
+import { randomUUID } from 'node:crypto';
+import { initProject, loadConfig, paths } from './config.js';
+import { qmdSearch, installInstructions } from './qmd.js';
+import { readJson, writeJson, toPosix } from './fs-utils.js';
 
 const TEXT_EXTS = new Set(['.md', '.txt', '.ts', '.tsx', '.js', '.py', '.json', '.yaml', '.yml']);
 
@@ -162,7 +160,7 @@ function rememberSearch(root, config, record) {
   writeJson(p.recentSearches, { searches: searches.slice(0, max) });
 }
 
-function adaptiveSearch(input, options = {}) {
+function adaptiveSearch(input, options: any = {}) {
   const root = options.root || process.cwd();
   initProject(root);
   const config = loadConfig(root);
@@ -216,4 +214,4 @@ function adaptiveSearch(input, options = {}) {
   return { results, warnings, backgroundJobs };
 }
 
-module.exports = { adaptiveSearch, inferMode, tokenize, walkFiles, globToRegex };
+export { adaptiveSearch, inferMode, tokenize, walkFiles, globToRegex };

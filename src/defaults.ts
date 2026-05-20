@@ -1,5 +1,3 @@
-'use strict';
-
 const DEFAULT_CONFIG = Object.freeze({
   qmdCommand: null,
   installInstructions: 'auto',
@@ -96,4 +94,4 @@ const PRESETS = Object.freeze({
   }
 });
 
-module.exports = { DEFAULT_CONFIG, PRESETS };
+export { DEFAULT_CONFIG, PRESETS };

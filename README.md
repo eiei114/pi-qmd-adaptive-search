@@ -1,14 +1,16 @@
-# qmd-adaptive-search
+# pi-qmd-adaptive-search
 
-[![npm version](https://img.shields.io/npm/v/qmd-adaptive-search?color=cb3837&label=npm)](https://www.npmjs.com/package/qmd-adaptive-search)
+[![npm version](https://img.shields.io/npm/v/pi-qmd-adaptive-search?color=cb3837&label=npm)](https://www.npmjs.com/package/pi-qmd-adaptive-search)
+[![GitHub](https://img.shields.io/badge/GitHub-keisu%2Fpi--qmd--adaptive--search-blue)](https://github.com/keisu/pi-qmd-adaptive-search)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![CI](https://github.com/keisu/qmd-adaptive-search/actions/workflows/ci.yml/badge.svg)](https://github.com/keisu/qmd-adaptive-search/actions/workflows/ci.yml)
+[![CI](https://github.com/keisu/pi-qmd-adaptive-search/actions/workflows/ci.yml/badge.svg)](https://github.com/keisu/pi-qmd-adaptive-search/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/status-MVP%200.1.0-orange)](#versioning-policy)
+[![Pi package](https://img.shields.io/badge/pi-package-purple)](#pi-installation)
 
 Project-local semantic file discovery for notes, docs, specs, plans, decisions, and other project files.
 
-`qmd-adaptive-search` uses [`qmd`](https://github.com/tobilu/qmd) when available, then improves results with query expansion, aliases, learned path boosts, scope hints, and filename/content fallback. It is designed for vague searches such as “where did we decide this?”, “related notes”, or “the spec about export”.
+`pi-qmd-adaptive-search` is a Pi package and CLI. It uses [`qmd`](https://github.com/tobilu/qmd) when available, then improves results with query expansion, aliases, learned path boosts, scope hints, and filename/content fallback. It is designed for vague searches such as “where did we decide this?”, “related notes”, or “the spec about export”.
 
 > Initial version: `0.1.0`. Usable MVP, not stable 1.0. Breaking changes may occur during `0.x`.
 
@@ -50,17 +52,49 @@ meaning/intent     -> qmd-adaptive-search
 
 ## Install
 
+### Pi installation
+
+Via npm, once published:
+
+```bash
+pi install npm:pi-qmd-adaptive-search
+```
+
+Or add to `.pi/settings.json`:
+
+```json
+{
+  "packages": ["npm:pi-qmd-adaptive-search"]
+}
+```
+
+From GitHub:
+
+```bash
+pi install git:github.com/keisu/pi-qmd-adaptive-search
+```
+
+Or add to `.pi/settings.json`:
+
+```json
+{
+  "packages": ["git:github.com/keisu/pi-qmd-adaptive-search"]
+}
+```
+
+### CLI installation
+
 From npm, once published:
 
 ```bash
-npm install -g qmd-adaptive-search
+npm install -g pi-qmd-adaptive-search
 ```
 
 From source:
 
 ```bash
-git clone <repo-url> qmd-adaptive-search
-cd qmd-adaptive-search
+git clone <repo-url> pi-qmd-adaptive-search
+cd pi-qmd-adaptive-search
 npm test
 npm link
 ```
@@ -119,6 +153,19 @@ MCP-style command names are accepted as CLI aliases:
 - `qmd_adaptive_search`
 - `qmd_search_feedback`
 - `qmd_adaptive_status`
+
+When installed as a Pi package, these are registered as Pi tools as well.
+
+Pi slash commands:
+
+| Command | Description |
+| --- | --- |
+| `/qmd-adaptive-init` | Create lightweight config files |
+| `/qmd-adaptive-status` | Show qmd/config/learning status |
+| `/qmd-adaptive-review` | Show pending suggestions |
+| `/qmd-adaptive-review approve` | Promote pending suggestions to shared aliases/boosts |
+| `/qmd-adaptive-configure <preset>` | Apply `docs`, `mixed`, `code`, or `privacy` preset |
+| `/qmd-adaptive-install-qmd` | Show qmd install guidance |
 
 ## Examples
 
@@ -198,7 +245,7 @@ const {
   adaptiveSearch,
   recordFeedback,
   adaptiveStatus
-} = require('qmd-adaptive-search');
+} = require('pi-qmd-adaptive-search');
 
 const found = adaptiveSearch({
   query: 'workout product decisions',

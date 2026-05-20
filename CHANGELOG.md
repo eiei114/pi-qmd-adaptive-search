@@ -17,6 +17,7 @@ This project follows a pragmatic `0.x` versioning policy: APIs and config may ch
 - `review` command to inspect and promote pending suggestions into shared aliases/boosts.
 - `install-qmd` helper command with explicit user confirmation.
 - Node.js library API.
+- Pi package metadata and extension entrypoint.
 - Privacy-preserving local storage model.
 - Node test coverage for search, feedback, and status.
 

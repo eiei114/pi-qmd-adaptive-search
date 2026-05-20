@@ -1,9 +1,11 @@
 {
-  "name": "qmd-adaptive-search",
+  "name": "pi-qmd-adaptive-search",
   "version": "0.1.0",
   "description": "Project-local semantic file discovery with qmd, fallback search, and local adaptive feedback.",
   "type": "commonjs",
   "keywords": [
+    "pi-package",
+    "pi-extension",
     "qmd",
     "semantic-search",
     "file-discovery",
@@ -12,13 +14,13 @@
     "cli",
     "adaptive-search"
   ],
-  "homepage": "https://github.com/keisu/qmd-adaptive-search#readme",
+  "homepage": "https://www.npmjs.com/package/pi-qmd-adaptive-search",
   "bugs": {
-    "url": "https://github.com/keisu/qmd-adaptive-search/issues"
+    "url": "https://github.com/keisu/pi-qmd-adaptive-search/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/keisu/qmd-adaptive-search.git"
+    "url": "https://github.com/keisu/pi-qmd-adaptive-search.git"
   },
   "bin": {
     "qmd-adaptive-search": "bin/qmd-adaptive-search.js",
@@ -27,6 +29,7 @@
   "main": "src/index.js",
   "files": [
     "bin/",
+    "extensions/",
     "src/",
     "README.md",
     "LICENSE",
@@ -41,5 +44,11 @@
     "node": ">=20"
   },
   "author": "Keisu",
-  "license": "MIT"
+  "license": "MIT",
+  "peerDependencies": {
+    "typebox": "*"
+  },
+  "pi": {
+    "extensions": ["./extensions/index.js"]
+  }
 }

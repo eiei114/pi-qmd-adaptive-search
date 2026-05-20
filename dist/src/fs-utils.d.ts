@@ -1,0 +1,10 @@
+declare function toPosix(value: any): string;
+declare function projectPath(root: any, relativePath: any): string;
+declare function ensureDir(dir: any): void;
+declare function readJson(file: any, fallback: any): any;
+declare function writeJson(file: any, value: any): void;
+declare function appendJsonLine(file: any, value: any): void;
+declare function readJsonLines(file: any): any[];
+declare function updateGitignore(root: any): boolean;
+declare function deepMerge(base: any, patch: any): any;
+export { toPosix, projectPath, ensureDir, readJson, writeJson, appendJsonLine, readJsonLines, updateGitignore, deepMerge };

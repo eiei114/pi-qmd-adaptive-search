@@ -39,10 +39,10 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "prepare": "npm run build",
     "test": "npm run build && node --test dist/test/*.test.js",
     "smoke": "npm run build && node bin/qmd-adaptive-search.js --help",
-    "check": "npm test && npm run smoke && npm pack --dry-run"
+    "check": "npm test && npm run smoke && npm pack --dry-run",
+    "prepack": "npm run build"
   },
   "engines": {
     "node": ">=20"
@@ -63,6 +63,8 @@
     }
   },
   "pi": {
-    "extensions": ["./extensions/index.ts"]
+    "extensions": [
+      "./extensions/index.ts"
+    ]
   }
 }

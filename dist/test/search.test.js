@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { adaptiveSearch, recordFeedback, adaptiveStatus, initProject } from '../src/index.js';
+import { parseQmdSearchOutput } from '../src/qmd.js';
 function tempProject() {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qmd-adaptive-'));
     fs.mkdirSync(path.join(root, 'docs'), { recursive: true });
@@ -36,5 +37,20 @@ test('status reports core counts', () => {
     assert.equal(status.aliases.shared, 0);
     assert.equal(status.boosts.learned, 0);
     assert.equal(status.manifest.enabled, true);
+});
+test('qmd URI paths resolve to local paths with underscores and spaces', () => {
+    const root = tempProject();
+    fs.mkdirSync(path.join(root, '4_Project', 'Roblox-Market-Research'), { recursive: true });
+    fs.writeFileSync(path.join(root, '4_Project', 'Roblox-Market-Research', 'CONTEXT.md'), '# Roblox Market Research\n', 'utf8');
+    fs.mkdirSync(path.join(root, '1_Fleeting'), { recursive: true });
+    fs.writeFileSync(path.join(root, '1_Fleeting', 'Memo_0503.md'), '# Memo\n', 'utf8');
+    const results = parseQmdSearchOutput([
+        'qmd://obsidian-note/4-Project/Roblox-Market-Research/CONTEXT.md:3 #abc',
+        'qmd://obsidian-note/1-Fleeting/Memo-0503.md:1 #def'
+    ].join('\n'), root);
+    assert.deepEqual(results.map((result) => result.path), [
+        '4_Project/Roblox-Market-Research/CONTEXT.md',
+        '1_Fleeting/Memo_0503.md'
+    ]);
 });
 //# sourceMappingURL=search.test.js.map

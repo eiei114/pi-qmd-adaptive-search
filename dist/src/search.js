@@ -202,7 +202,8 @@ function adaptiveSearch(input, options = {}) {
     const alias = loadAliasTerms(root, queryTerms);
     const terms = alias.terms;
     const boostEntries = loadBoosts(root);
-    const qmd = qmdSearch(input.query, maxResults, config, root);
+    const useQueryFallback = config.search?.qmdQueryFallback === true || ['article', 'project', 'recall'].includes(mode);
+    const qmd = qmdSearch(input.query, maxResults, config, root, { useQueryFallback });
     if (!qmd.detected.available)
         warnings.push(installInstructions());
     else if (qmd.error)

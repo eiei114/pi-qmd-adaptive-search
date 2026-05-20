@@ -6,8 +6,25 @@ import { toPosix } from './fs-utils.js';
 function commandCandidates(config) {
   const candidates = [];
   if (Array.isArray(config.qmdCommand) && config.qmdCommand.length > 0) candidates.push(config.qmdCommand);
+  const discovered = discoverWindowsQmdNodeEntrypoint();
+  if (discovered) candidates.push(discovered);
   candidates.push(['qmd']);
   return candidates;
+}
+
+function discoverWindowsQmdNodeEntrypoint() {
+  if (process.platform !== 'win32') return null;
+  const where = spawnSync('where.exe', ['qmd.cmd'], { encoding: 'utf8', shell: false, timeout: 2000 });
+  if (where.status !== 0 || !where.stdout) return null;
+  for (const shim of where.stdout.split(/\r?\n/).map((line) => line.trim()).filter(Boolean)) {
+    try {
+      const text = fs.readFileSync(shim, 'utf8');
+      const match = text.match(/\bnode(?:\.exe)?\s+"([^"]*\\node_modules\\@tobilu\\qmd\\dist\\cli\\qmd\.js)"/i)
+        || text.match(/\bnode(?:\.exe)?\s+"([^"]*\/node_modules\/@tobilu\/qmd\/dist\/cli\/qmd\.js)"/i);
+      if (match && fs.existsSync(match[1])) return ['node', match[1]];
+    } catch {}
+  }
+  return null;
 }
 
 function runCommand(command, args, options: any = {}) {
@@ -15,15 +32,56 @@ function runCommand(command, args, options: any = {}) {
   const bins = process.platform === 'win32' && !path.extname(bin) ? [bin, `${bin}.cmd`, `${bin}.exe`] : [bin];
   let last;
   for (const candidate of bins) {
+    const shell = process.platform === 'win32' && /\.(cmd|bat)$/i.test(candidate);
     last = spawnSync(candidate, [...prefix, ...args], {
       cwd: options.cwd || process.cwd(),
       encoding: 'utf8',
-      shell: false,
+      shell,
       timeout: options.timeoutMs || 8000
     });
-    if (!last.error || last.error.code !== 'ENOENT') return last;
+    if (!last.error || !['ENOENT', 'EINVAL'].includes(last.error.code)) return last;
   }
   return last;
+}
+
+function canonicalPathKey(value) {
+  return toPosix(value)
+    .toLowerCase()
+    .replace(/[\s_]+/g, '-')
+    .replace(/-+/g, '-');
+}
+
+function collectFiles(root, dir = root, output = []) {
+  let entries = [];
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return output;
+  }
+  for (const entry of entries) {
+    const abs = path.join(dir, entry.name);
+    const rel = toPosix(path.relative(root, abs));
+    if (rel === '.git' || rel.startsWith('.git/') || rel === 'node_modules' || rel.includes('/node_modules/')) continue;
+    if (entry.isDirectory()) collectFiles(root, abs, output);
+    else if (entry.isFile()) output.push(rel);
+  }
+  return output;
+}
+
+function createPathResolver(root) {
+  const byCanonical = new Map();
+  return function resolve(raw) {
+    const direct = toPosix(path.isAbsolute(raw) ? path.relative(root, raw) : raw).replace(/^\.\//, '').replace(/:\d+$/, '');
+    if (fs.existsSync(path.join(root, direct))) return direct;
+
+    const numberedFolder = direct.replace(/^(\d+)-([^/]+)/, '$1_$2');
+    if (fs.existsSync(path.join(root, numberedFolder))) return numberedFolder;
+
+    if (byCanonical.size === 0) {
+      for (const rel of collectFiles(root)) byCanonical.set(canonicalPathKey(rel), rel);
+    }
+    return byCanonical.get(canonicalPathKey(direct)) || direct;
+  };
 }
 
 function detectQmd(config, root = process.cwd()) {
@@ -41,13 +99,14 @@ function detectQmd(config, root = process.cwd()) {
 function parseQmdSearchOutput(output, root) {
   const results = [];
   const seen = new Set();
+  const resolvePath = createPathResolver(root);
   const lines = String(output || '').split(/\r?\n/);
   for (const line of lines) {
     const qmdMatch = line.match(/qmd:\/\/[^/]+\/(.+?)(?:\s|$)/);
     const mdPathMatch = line.match(/((?:[\w .()\-[\]@]+[\\/])+[\w .()\-[\]@]+\.(?:md|txt|ts|tsx|js|py|json|ya?ml))/i);
     const raw = qmdMatch ? qmdMatch[1] : (mdPathMatch ? mdPathMatch[1] : null);
     if (!raw) continue;
-    const rel = toPosix(path.isAbsolute(raw) ? path.relative(root, raw) : raw).replace(/^\.\//, '').replace(/:\d+$/, '');
+    const rel = resolvePath(raw);
     if (!fs.existsSync(path.join(root, rel))) continue;
     if (seen.has(rel)) continue;
     seen.add(rel);
@@ -56,12 +115,25 @@ function parseQmdSearchOutput(output, root) {
   return results;
 }
 
-function qmdSearch(query, maxResults, config, root = process.cwd()) {
+function qmdSearch(query, maxResults, config, root = process.cwd(), options: any = {}) {
   const detected = detectQmd(config, root);
   if (!detected.available) return { detected, results: [], error: 'qmd not found' };
-  const run = runCommand(detected.command, ['search', query, '-n', String(maxResults)], { cwd: root, timeoutMs: 15000 });
-  if (run.status !== 0) return { detected, results: [], error: run.stderr || String(run.error || 'qmd search failed') };
-  return { detected, results: parseQmdSearchOutput(run.stdout, root), raw: run.stdout };
+  const search = runCommand(detected.command, ['search', query, '-n', String(maxResults)], { cwd: root, timeoutMs: config.search?.qmdSearchTimeoutMs || 15000 });
+  if (search.status !== 0) return { detected, results: [], error: search.stderr || String(search.error || 'qmd search failed') };
+
+  const searchResults = parseQmdSearchOutput(search.stdout, root);
+  if (searchResults.length > 0) return { detected, results: searchResults, raw: search.stdout, method: 'search' };
+
+  if (!options.useQueryFallback) return { detected, results: [], raw: search.stdout, method: 'search' };
+
+  const semantic = runCommand(detected.command, ['query', query, '-n', String(maxResults)], { cwd: root, timeoutMs: config.search?.qmdQueryTimeoutMs || 45000 });
+  if (semantic.status !== 0) return { detected, results: [], error: semantic.stderr || String(semantic.error || 'qmd query failed'), raw: search.stdout };
+  return {
+    detected,
+    results: parseQmdSearchOutput(semantic.stdout, root).map((result) => ({ ...result, why: ['qmd query match'] })),
+    raw: semantic.stdout,
+    method: 'query'
+  };
 }
 
 function installInstructions() {

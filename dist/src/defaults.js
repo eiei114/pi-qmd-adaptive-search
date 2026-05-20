@@ -9,7 +9,10 @@ const DEFAULT_CONFIG = Object.freeze({
         maxHighlightsPerResult: 2,
         maxHighlightChars: 240,
         maxLeadChars: 300,
-        defaultModeBias: 'auto'
+        defaultModeBias: 'auto',
+        qmdSearchTimeoutMs: 15000,
+        qmdQueryTimeoutMs: 45000,
+        qmdQueryFallback: false
     },
     indexing: {
         runner: 'auto',

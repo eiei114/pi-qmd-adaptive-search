@@ -10,6 +10,9 @@ declare const DEFAULT_CONFIG: Readonly<{
         maxHighlightChars: number;
         maxLeadChars: number;
         defaultModeBias: string;
+        qmdSearchTimeoutMs: number;
+        qmdQueryTimeoutMs: number;
+        qmdQueryFallback: boolean;
     };
     indexing: {
         runner: string;

@@ -1,0 +1,24 @@
+{
+  "name": "qmd-adaptive-search",
+  "version": "0.1.0",
+  "description": "Project-local semantic file discovery with qmd, fallback search, and local adaptive feedback.",
+  "type": "commonjs",
+  "bin": {
+    "qmd-adaptive-search": "bin/qmd-adaptive-search.js",
+    "qmd-adaptive": "bin/qmd-adaptive-search.js"
+  },
+  "main": "src/index.js",
+  "files": [
+    "bin/",
+    "src/",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "smoke": "node bin/qmd-adaptive-search.js --help"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

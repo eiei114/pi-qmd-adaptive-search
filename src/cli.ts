@@ -5,6 +5,7 @@ import { adaptiveSearch } from './search.js';
 import { recordFeedback, reviewSuggestions, approveSuggestions } from './feedback.js';
 import { adaptiveStatus } from './status.js';
 import { detectQmd, installInstructions } from './qmd.js';
+import { qmdOperationPlan, runQmdOperation } from './qmd-operations.js';
 import { loadConfig } from './config.js';
 import { spawnSync } from 'node:child_process';
 
@@ -38,6 +39,7 @@ Usage:
   qmd-adaptive-search configure --preset docs|mixed|code|privacy [--reset]
   qmd-adaptive-search review [--approve]
   qmd-adaptive-search install-qmd [--manager bun|npm|pnpm|yarn] [--yes]
+  qmd-adaptive-search qmd setup|update|embed [--dry-run] [--yes]
 
 MCP-style tool names:
   qmd_adaptive_search, qmd_search_feedback, qmd_adaptive_status
@@ -92,6 +94,15 @@ async function runCli(argv) {
   if (command === 'review' || command === '/qmd-adaptive-review') {
     if (args.approve) return printJson(approveSuggestions());
     return printJson(reviewSuggestions());
+  }
+  if (command === 'qmd') {
+    const operation = args._[1];
+    const plan = qmdOperationPlan(operation, args);
+    printJson({ plan });
+    if (args['dry-run'] || args.plan) return;
+    const approved = args.yes || await confirm(`Run qmd ${operation}?`);
+    if (!approved) return printJson({ ok: false, cancelled: true, plan, nextCommand: plan.confirmCommand });
+    return printJson(runQmdOperation(operation, { ...args, yes: true }));
   }
   if (command === 'install-qmd' || command === '/qmd-adaptive-install-qmd') return printJson(await installQmd(args));
   if (command === 'install-instructions') return console.log(installInstructions());

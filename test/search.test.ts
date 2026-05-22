@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { adaptiveSearch, recordFeedback, adaptiveStatus, initProject } from '../src/index.js';
+import { adaptiveSearch, recordFeedback, adaptiveStatus, initProject, qmdOperationPlan, runQmdOperation } from '../src/index.js';
 import { parseQmdSearchOutput } from '../src/qmd.js';
 
 function tempProject() {
@@ -41,6 +41,36 @@ test('status reports core counts', () => {
   assert.equal(status.aliases.shared, 0);
   assert.equal(status.boosts.learned, 0);
   assert.equal(status.manifest.enabled, true);
+  assert.equal(typeof status.qmdNextOperation.command, 'string');
+});
+
+test('qmd setup plan shows target side effects and confirmation command', () => {
+  const root = tempProject();
+  const plan = qmdOperationPlan('setup', { name: 'docs', mask: '**/*.md' }, { root, qmd: { available: true, command: ['qmd'] } });
+  assert.deepEqual(plan.command, ['qmd', 'collection', 'add', '.', '--name', 'docs', '--mask', '**/*.md']);
+  assert.ok(plan.sideEffects.some((item) => item.includes('collection')));
+  assert.equal(plan.dryRunCommand, 'qmd-adaptive-search qmd setup --dry-run');
+  assert.equal(plan.confirmCommand, 'qmd-adaptive-search qmd setup --yes');
+});
+
+test('qmd operation dry run does not execute heavy command', () => {
+  const root = tempProject();
+  const result = runQmdOperation('embed', { dryRun: true }, { root, qmd: { available: true, command: ['definitely-must-not-run'] } });
+  assert.equal(result.ok, true);
+  assert.equal(result.dryRun, true);
+  assert.deepEqual(result.plan.command, ['definitely-must-not-run', 'embed']);
+});
+
+test('confirmed qmd update records job state', () => {
+  const root = tempProject();
+  const fakeQmd = path.join(root, 'fake-qmd.cjs');
+  fs.writeFileSync(fakeQmd, 'console.log(process.argv.slice(2).join(" "));\n', 'utf8');
+  const result = runQmdOperation('update', { yes: true }, { root, qmd: { available: true, command: ['node', fakeQmd] } });
+  assert.equal(result.ok, true);
+  assert.match(result.stdout, /update/);
+  const jobState = JSON.parse(fs.readFileSync(path.join(root, '.qmd-adaptive-search', 'local', 'job-state.json'), 'utf8'));
+  assert.equal(jobState.currentJob, null);
+  assert.equal(jobState.lastUpdateJob.operation, 'update');
 });
 
 test('qmd URI paths resolve to local paths with underscores and spaces', () => {

@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { adaptiveSearch, recordFeedback, adaptiveStatus, initProject } from '../src/index.js';
-import { parseQmdSearchOutput } from '../src/qmd.js';
+import { detectQmd, parseQmdSearchOutput } from '../src/qmd.js';
 function tempProject() {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qmd-adaptive-'));
     fs.mkdirSync(path.join(root, 'docs'), { recursive: true });
@@ -18,6 +19,60 @@ function configureMockQmd(root, body) {
     fs.writeFileSync(mockPath, body, 'utf8');
     fs.writeFileSync(path.join(root, '.qmd-adaptive-search', 'config.json'), JSON.stringify({ qmdCommand: [process.execPath, mockPath] }, null, 2), 'utf8');
     return mockPath;
+}
+function writeFakeQmd(root, options = {}) {
+    const script = path.join(root, 'fake-qmd.mjs');
+    fs.writeFileSync(script, `
+const command = process.argv[2];
+if (command === 'status' || command === '--version') {
+  console.log('fake qmd ready');
+  process.exit(0);
+}
+if (command === 'search') {
+  ${options.searchStatus === 1 ? `console.error(${JSON.stringify(options.searchStderr || 'search failed')}); process.exit(1);` : `console.log(${JSON.stringify(options.searchStdout || '')}); process.exit(0);`}
+}
+if (command === 'query') {
+  ${options.queryStatus === 1 ? `console.error(${JSON.stringify(options.queryStderr || 'query failed')}); process.exit(1);` : `console.log(${JSON.stringify(options.queryStdout || '')}); process.exit(0);`}
+}
+console.error('unexpected command: ' + command);
+process.exit(1);
+`, 'utf8');
+    return [process.execPath, script];
+}
+function configureFakeQmd(root, options = {}) {
+    initProject(root);
+    const configPath = path.join(root, '.qmd-adaptive-search', 'config.json');
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    config.qmdCommand = writeFakeQmd(root, options);
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
+}
+function withPathPrefix(prefix, run) {
+    const pathKey = Object.keys(process.env).find((key) => key.toLowerCase() === 'path') || 'PATH';
+    const oldPath = process.env[pathKey];
+    process.env[pathKey] = `${prefix}${path.delimiter}${oldPath || ''}`;
+    try {
+        return run();
+    }
+    finally {
+        if (oldPath === undefined)
+            delete process.env[pathKey];
+        else
+            process.env[pathKey] = oldPath;
+    }
+}
+function readAllFiles(root) {
+    const values = [];
+    function walk(dir) {
+        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+            const abs = path.join(dir, entry.name);
+            if (entry.isDirectory())
+                walk(abs);
+            else
+                values.push(fs.readFileSync(abs, 'utf8'));
+        }
+    }
+    walk(root);
+    return values.join('\n');
 }
 test('search creates lightweight config and returns fallback result', () => {
     const root = tempProject();
@@ -34,8 +89,19 @@ test('feedback learns from recent result without storing raw query', () => {
     assert.equal(feedback.ok, true);
     const recent = JSON.parse(fs.readFileSync(path.join(root, '.qmd-adaptive-search', 'local', 'recent-searches.json'), 'utf8'));
     assert.equal(Object.hasOwn(recent.searches[0], 'query'), false);
+    assert.equal(Object.hasOwn(recent.searches[0], 'queryHash'), false);
     const boosts = JSON.parse(fs.readFileSync(path.join(root, '.qmd-adaptive-search', 'local', 'learned-boosts.json'), 'utf8'));
     assert.ok(boosts.boosts['docs/ProductSpec.md'] > 0);
+});
+test('privacy store excludes exact raw query and query hash', () => {
+    const root = tempProject();
+    const query = 'product decisions raw privacy sentinel';
+    adaptiveSearch({ query, maxResults: 5 }, { root });
+    recordFeedback({ selectedPath: 'docs/ProductSpec.md', rating: 'good' }, { root });
+    const stored = readAllFiles(path.join(root, '.qmd-adaptive-search'));
+    const queryHash = createHash('sha256').update(query).digest('hex');
+    assert.equal(stored.includes(query), false);
+    assert.equal(stored.includes(queryHash), false);
 });
 test('status reports core counts', () => {
     const root = tempProject();
@@ -97,5 +163,105 @@ test('qmd URI paths resolve to local paths with underscores and spaces', () => {
         '4_Project/Roblox-Market-Research/CONTEXT.md',
         '1_Fleeting/Memo_0503.md'
     ]);
+});
+test('qmd output resolves Windows, macOS, and Linux style paths back to project files', () => {
+    const root = tempProject();
+    fs.mkdirSync(path.join(root, 'notes'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'docs', 'Windows Note.md'), '# Windows\n', 'utf8');
+    fs.writeFileSync(path.join(root, 'docs', 'Mac Note.md'), '# Mac\n', 'utf8');
+    fs.writeFileSync(path.join(root, 'notes', 'linux-guide.md'), '# Linux\n', 'utf8');
+    const results = parseQmdSearchOutput([
+        'qmd://obsidian-note/C:/Users/alice/Vault/docs/Windows Note.md:12 match',
+        'qmd://obsidian-note/Users/alice/Vault/docs/Mac Note.md:4 match',
+        'qmd://obsidian-note/home/alice/vault/notes/linux-guide.md:7 match'
+    ].join('\n'), root);
+    assert.deepEqual(results.map((result) => result.path), [
+        'docs/Windows Note.md',
+        'docs/Mac Note.md',
+        'notes/linux-guide.md'
+    ]);
+});
+test('detects qmd from configured command', () => {
+    const root = tempProject();
+    const command = writeFakeQmd(root);
+    const detected = detectQmd({ qmdCommand: command }, root);
+    assert.equal(detected.available, true);
+    assert.deepEqual(detected.command, command);
+});
+test('detects qmd on macOS/Linux PATH', { skip: process.platform === 'win32' }, () => {
+    const root = tempProject();
+    const bin = path.join(root, 'bin');
+    fs.mkdirSync(bin, { recursive: true });
+    const script = path.join(bin, 'qmd');
+    fs.writeFileSync(script, `#!/usr/bin/env node\nif (process.argv[2] === 'status') { console.log('ok'); process.exit(0); } process.exit(1);\n`, 'utf8');
+    fs.chmodSync(script, 0o755);
+    withPathPrefix(bin, () => {
+        const detected = detectQmd({ qmdCommand: null }, root);
+        assert.equal(detected.available, true);
+        assert.deepEqual(detected.command, ['qmd']);
+    });
+});
+test('detects qmd from Windows npm shim', { skip: process.platform !== 'win32' }, () => {
+    const root = tempProject();
+    const bin = path.join(root, 'bin');
+    const qmdDir = path.join(root, 'node_modules', '@tobilu', 'qmd', 'dist', 'cli');
+    fs.mkdirSync(bin, { recursive: true });
+    fs.mkdirSync(qmdDir, { recursive: true });
+    const qmdJs = path.join(qmdDir, 'qmd.js');
+    fs.writeFileSync(qmdJs, `if (process.argv[2] === 'status') { console.log('ok'); process.exit(0); } process.exit(1);\n`, 'utf8');
+    fs.writeFileSync(path.join(bin, 'qmd.cmd'), `@ECHO OFF\r\nnode "${qmdJs.replace(/\//g, '\\')}" %*\r\n`, 'utf8');
+    withPathPrefix(bin, () => {
+        const detected = detectQmd({ qmdCommand: null }, root);
+        assert.equal(detected.available, true);
+        assert.deepEqual(detected.command, ['node', qmdJs]);
+    });
+});
+test('fallback handles Japanese query content in docs', () => {
+    const root = tempProject();
+    configureFakeQmd(root, { searchStatus: 1, searchStderr: 'skip real qmd for fallback test' });
+    fs.writeFileSync(path.join(root, 'docs', '検索メモ.md'), '# 検索メモ\n日本語検索の仕様決定をここに保存する。\n', 'utf8');
+    const result = adaptiveSearch({ query: '日本語 仕様 決定', maxResults: 5 }, { root });
+    assert.equal(result.results[0].path, 'docs/検索メモ.md');
+    assert.ok(result.results[0].highlights.some((highlight) => highlight.includes('日本語検索')));
+});
+test('fallback ranks docs scope above archive matches', () => {
+    const root = tempProject();
+    configureFakeQmd(root, { searchStatus: 1, searchStderr: 'skip real qmd for fallback test' });
+    fs.mkdirSync(path.join(root, 'archive'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'src'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'archive', 'ProductSpec.md'), '# Old Product Spec\nData portability and export decisions.\n', 'utf8');
+    fs.writeFileSync(path.join(root, 'src', 'ProductSpec.md'), '# Source Product Spec\nData portability and export decisions.\n', 'utf8');
+    const result = adaptiveSearch({ query: 'product decisions', mode: 'project', scopeHint: 'docs', maxResults: 10 }, { root });
+    const archived = result.results.find((item) => item.path === 'archive/ProductSpec.md');
+    assert.equal(result.results[0].path, 'docs/ProductSpec.md');
+    assert.ok(result.results[0].why.includes('scope boost: docs'));
+    assert.ok(archived?.why.includes('archive penalty'));
+    assert.ok(result.results[0].score > (archived?.score || 0));
+});
+test('qmd query fallback is used for project searches when qmd search has no parseable paths', () => {
+    const root = tempProject();
+    initProject(root);
+    const configPath = path.join(root, '.qmd-adaptive-search', 'config.json');
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    config.qmdCommand = writeFakeQmd(root, {
+        searchStdout: 'no file paths here',
+        queryStdout: 'qmd://obsidian-note/docs/ProductSpec.md:1 semantic match'
+    });
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
+    const result = adaptiveSearch({ query: 'export decisions', mode: 'project', maxResults: 5 }, { root });
+    assert.equal(result.results[0].path, 'docs/ProductSpec.md');
+    assert.ok(result.results[0].source.includes('qmd'));
+    assert.ok(result.results[0].why.includes('qmd query match'));
+});
+test('qmd search failure still returns fallback results with warning', () => {
+    const root = tempProject();
+    initProject(root);
+    const configPath = path.join(root, '.qmd-adaptive-search', 'config.json');
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    config.qmdCommand = writeFakeQmd(root, { searchStatus: 1, searchStderr: 'boom' });
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
+    const result = adaptiveSearch({ query: 'product decisions', maxResults: 5 }, { root });
+    assert.equal(result.results[0].path, 'docs/ProductSpec.md');
+    assert.ok(result.warnings.some((warning) => warning.includes('qmd search failed; fallback used')));
 });
 //# sourceMappingURL=search.test.js.map

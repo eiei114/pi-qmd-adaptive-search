@@ -80,7 +80,13 @@ function createPathResolver(root) {
     if (byCanonical.size === 0) {
       for (const rel of collectFiles(root)) byCanonical.set(canonicalPathKey(rel), rel);
     }
-    return byCanonical.get(canonicalPathKey(direct)) || direct;
+    const directKey = canonicalPathKey(direct).replace(/^[a-z]:/i, '').replace(/^\/+/, '');
+    const exact = byCanonical.get(directKey);
+    if (exact) return exact;
+    for (const [key, rel] of byCanonical.entries()) {
+      if (directKey.endsWith(`/${key}`)) return rel;
+    }
+    return direct;
   };
 }
 
@@ -102,7 +108,7 @@ function parseQmdSearchOutput(output, root) {
   const resolvePath = createPathResolver(root);
   const lines = String(output || '').split(/\r?\n/);
   for (const line of lines) {
-    const qmdMatch = line.match(/qmd:\/\/[^/]+\/(.+?)(?:\s|$)/);
+    const qmdMatch = line.match(/qmd:\/\/[^/]+\/(.+?\.(?:md|txt|ts|tsx|js|py|json|ya?ml))(?:[:\s]|$)/i);
     const mdPathMatch = line.match(/((?:[\w .()\-[\]@]+[\\/])+[\w .()\-[\]@]+\.(?:md|txt|ts|tsx|js|py|json|ya?ml))/i);
     const raw = qmdMatch ? qmdMatch[1] : (mdPathMatch ? mdPathMatch[1] : null);
     if (!raw) continue;

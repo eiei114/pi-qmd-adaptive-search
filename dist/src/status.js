@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import { initProject, loadConfig, paths } from './config.js';
 import { detectQmd } from './qmd.js';
 import { readJson, readJsonLines } from './fs-utils.js';
+import { backgroundJobSummary, readJobState } from './job-state.js';
 function countObject(file, key) {
     return Object.keys(readJson(file, { [key]: {} })[key] || {}).length;
 }
@@ -12,7 +13,8 @@ function adaptiveStatus(options = {}) {
     const p = paths(root);
     const qmd = detectQmd(config, root);
     const manifest = readJson(p.fileManifest, { files: [], updatedAt: null });
-    const jobState = readJson(p.jobState, { currentJob: null, lastUpdateJob: null, lastEmbedJob: null, suppressions: {} });
+    const jobState = readJobState(root);
+    const backgroundJobs = backgroundJobSummary(jobState);
     const recent = readJson(p.recentSearches, { searches: [] });
     return {
         configPath: p.config,
@@ -29,9 +31,15 @@ function adaptiveStatus(options = {}) {
         },
         pendingSuggestions: readJsonLines(p.pendingSuggestions).length,
         manifest: { enabled: !!config.changeDetection?.manifestEnabled, files: (manifest.files || []).length, updatedAt: manifest.updatedAt },
-        backgroundJob: jobState.currentJob,
-        lastUpdateJob: jobState.lastUpdateJob,
-        lastEmbedJob: jobState.lastEmbedJob,
+        backgroundJobs,
+        backgroundJob: backgroundJobs.currentJob,
+        pendingBackgroundJobs: backgroundJobs.pending,
+        failedBackgroundJobs: backgroundJobs.failed,
+        lastBackgroundJob: backgroundJobs.lastJob,
+        lastSearchJob: backgroundJobs.lastSearchJob,
+        lastUpdateJob: backgroundJobs.lastUpdateJob,
+        lastEmbedJob: backgroundJobs.lastEmbedJob,
+        recoveryHints: backgroundJobs.recoveryHints,
         suppressions: jobState.suppressions || {},
         recentSearches: (recent.searches || []).length,
         localIgnored: fs.existsSync(p.local)

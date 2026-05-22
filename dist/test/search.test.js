@@ -12,6 +12,13 @@ function tempProject() {
     fs.writeFileSync(path.join(root, 'README.md'), '# Test Project\n', 'utf8');
     return root;
 }
+function configureMockQmd(root, body) {
+    initProject(root);
+    const mockPath = path.join(root, 'mock-qmd.cjs');
+    fs.writeFileSync(mockPath, body, 'utf8');
+    fs.writeFileSync(path.join(root, '.qmd-adaptive-search', 'config.json'), JSON.stringify({ qmdCommand: [process.execPath, mockPath] }, null, 2), 'utf8');
+    return mockPath;
+}
 test('search creates lightweight config and returns fallback result', () => {
     const root = tempProject();
     const result = adaptiveSearch({ query: 'product decisions', maxResults: 5 }, { root });
@@ -37,6 +44,44 @@ test('status reports core counts', () => {
     assert.equal(status.aliases.shared, 0);
     assert.equal(status.boosts.learned, 0);
     assert.equal(status.manifest.enabled, true);
+});
+test('search records completed qmd job state', () => {
+    const root = tempProject();
+    configureMockQmd(root, `
+const command = process.argv[2];
+if (command === 'status') process.exit(0);
+if (command === 'search') {
+  console.log('docs/ProductSpec.md:1 Product Spec');
+  process.exit(0);
+}
+process.exit(1);
+`);
+    const result = adaptiveSearch({ query: 'product decisions', maxResults: 5 }, { root });
+    assert.equal(result.backgroundJobs[0].status, 'completed');
+    assert.equal(result.backgroundJobs[0].result.resultCount, 1);
+    const status = adaptiveStatus({ root });
+    assert.equal(status.backgroundJobs.pending.length, 0);
+    assert.equal(status.backgroundJobs.lastSearchJob.status, 'completed');
+    assert.equal(status.lastSearchJob.result.resultCount, 1);
+});
+test('search records failed qmd job state with recovery hint', () => {
+    const root = tempProject();
+    configureMockQmd(root, `
+const command = process.argv[2];
+if (command === 'status') process.exit(0);
+if (command === 'search') {
+  console.error('index unavailable');
+  process.exit(2);
+}
+process.exit(1);
+`);
+    const result = adaptiveSearch({ query: 'product decisions', maxResults: 5 }, { root });
+    assert.equal(result.backgroundJobs[0].status, 'failed');
+    assert.match(result.backgroundJobs[0].error, /index unavailable/);
+    const status = adaptiveStatus({ root });
+    assert.equal(status.failedBackgroundJobs.length, 1);
+    assert.equal(status.failedBackgroundJobs[0].status, 'failed');
+    assert.ok(status.recoveryHints[0].hint.includes('qmd status'));
 });
 test('qmd URI paths resolve to local paths with underscores and spaces', () => {
     const root = tempProject();

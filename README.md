@@ -156,7 +156,9 @@ Expected trade-off: fallback search is lexical, not semantic. It is useful for f
 
 ### Background jobs
 
-The current MVP does not start background collection setup, collection update, embedding, watcher, idle, process, or subagent jobs. `backgroundJobs` is currently an empty array, and `qmd-adaptive-search status` reports only the local job-state file if one exists.
+The current MVP does not start long-running collection setup, collection update, embedding, watcher, idle, process, or subagent jobs. It does record each synchronous qmd search/query attempt in `.qmd-adaptive-search/local/job-state.json`, including the last job, pending/running jobs, failures, qmd command metadata, result counts, and recovery hints.
+
+`qmd-adaptive-search search ...` returns `backgroundJobs` with the latest operation state. `qmd-adaptive-search status` expands this into `backgroundJobs`, `pendingBackgroundJobs`, `failedBackgroundJobs`, `lastBackgroundJob`, `lastSearchJob`, and `recoveryHints`.
 
 Treat the `indexing`, `idle`, and `changeDetection` config fields as forward-compatible settings for future orchestration. For now, run qmd setup/update/embed commands manually using qmd's own documentation, then use `qmd-adaptive-search status` and `qmd-adaptive-search search ...` to verify this package's behavior.
 
@@ -305,7 +307,7 @@ Approved shared aliases/boosts are written to commit-friendly files in `.qmd-ada
 ## Known limitations
 
 - qmd installation is optional, but true semantic search depends on qmd being installed and usable in the project.
-- Collection setup, collection update, embedding orchestration, idle scheduling, and background jobs are not implemented in this MVP.
+- Collection setup, collection update, embedding orchestration, idle scheduling, and long-running background jobs are not implemented in this MVP.
 - There is no automatic watcher-driven reindex or refresh queue yet.
 - qmd output parsing is path-based; non-path answer text is not converted into results.
 - Fallback search reads a bounded sample of text files and uses simple lexical scoring, so it can miss semantic matches.

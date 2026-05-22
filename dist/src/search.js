@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { initProject, loadConfig, paths } from './config.js';
 import { qmdSearch, installInstructions } from './qmd.js';
 import { readJson, writeJson, toPosix } from './fs-utils.js';
+import { backgroundJobsForResult, finishQmdSearchJob, readJobState, startQmdSearchJob } from './job-state.js';
 const TEXT_EXTS = new Set(['.md', '.txt', '.ts', '.tsx', '.js', '.py', '.json', '.yaml', '.yml']);
 function tokenize(value) {
     return Array.from(new Set(String(value || '').toLowerCase().split(/[\s\p{P}\p{S}]+/u).filter((t) => t.length >= 2).slice(0, 12)));
@@ -194,7 +195,6 @@ function adaptiveSearch(input, options = {}) {
     initProject(root);
     const config = loadConfig(root);
     const warnings = [];
-    const backgroundJobs = [];
     const maxResults = Math.min(Number(input.maxResults || config.search.defaultMaxResults || 10), Number(config.search.hardMaxResults || 30));
     const mode = inferMode(input.query, input.mode || config.search.defaultModeBias || 'auto');
     const scopeHints = Array.isArray(input.scopeHint) ? input.scopeHint : (input.scopeHint ? [input.scopeHint] : []);
@@ -203,7 +203,9 @@ function adaptiveSearch(input, options = {}) {
     const terms = alias.terms;
     const boostEntries = loadBoosts(root);
     const useQueryFallback = config.search?.qmdQueryFallback === true || ['article', 'project', 'recall'].includes(mode);
+    const qmdJob = startQmdSearchJob(root, { mode, maxResults, scopeHints });
     const qmd = qmdSearch(input.query, maxResults, config, root, { useQueryFallback });
+    finishQmdSearchJob(root, qmdJob, qmd);
     if (!qmd.detected.available)
         warnings.push(installInstructions());
     else if (qmd.error)
@@ -240,6 +242,7 @@ function adaptiveSearch(input, options = {}) {
         highlights: highlights(root, r.path, terms, config.search.maxHighlightsPerResult || 2, config.search.maxHighlightChars || 240)
     }));
     rememberSearch(root, config, { mode, resultPaths: results.map((r) => r.path), anchors: queryTerms });
+    const backgroundJobs = backgroundJobsForResult(readJobState(root));
     return { results, warnings, backgroundJobs };
 }
 export { adaptiveSearch, inferMode, tokenize, walkFiles, globToRegex };

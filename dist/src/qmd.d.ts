@@ -23,9 +23,25 @@ declare function qmdSearch(query: any, maxResults: any, config: any, root?: stri
         statusText?: undefined;
     };
     results: any[];
-    error: any;
-    raw?: undefined;
+    error: string;
     method?: undefined;
+    raw?: undefined;
+} | {
+    detected: {
+        available: boolean;
+        command: any;
+        statusText: any;
+        errors?: undefined;
+    } | {
+        available: boolean;
+        command: any;
+        errors: any[];
+        statusText?: undefined;
+    };
+    results: any[];
+    error: any;
+    method: string;
+    raw?: undefined;
 } | {
     detected: {
         available: boolean;
@@ -57,7 +73,7 @@ declare function qmdSearch(query: any, maxResults: any, config: any, root?: stri
     results: any[];
     error: any;
     raw: any;
-    method?: undefined;
+    method: string;
 };
 declare function installInstructions(): string;
 export { detectQmd, qmdSearch, parseQmdSearchOutput, installInstructions };

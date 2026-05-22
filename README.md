@@ -130,6 +130,36 @@ First run creates:
 
 `local/` and `logs/` are added to `.gitignore`. `config.json`, `shared-aliases.json`, and `shared-boosts.json` can be committed.
 
+## Runtime behavior
+
+### With qmd installed
+
+When qmd is available, search uses it first:
+
+1. Detect qmd from `.qmd-adaptive-search/config.json` `qmdCommand`, a Windows `qmd.cmd` shim, or `qmd` on `PATH`.
+2. Run `qmd search <query> -n <max>`.
+3. In `article`, `project`, or `recall` mode, fall back to `qmd query <query> -n <max>` if `qmd search` returns no parseable file paths. You can also force this behavior with `search.qmdQueryFallback: true`.
+4. Merge qmd hits with local filename/path/content scoring, scope boosts, shared boosts, and learned boosts.
+
+qmd result lines must contain either a `qmd://.../<path>` URI or a project file path. Paths outside the current project or files excluded by `fileGlobs` / `excludeGlobs` are ignored.
+
+### Without qmd installed
+
+Missing qmd is supported. Search still:
+
+- creates `.qmd-adaptive-search/` on first run;
+- scans files matching `fileGlobs` and not matching `excludeGlobs`;
+- ranks filename, path, content, scope hints, aliases, and boosts;
+- returns JSON `results`, plus a warning beginning with `qmd was not found.` and install/config guidance.
+
+Expected trade-off: fallback search is lexical, not semantic. It is useful for file discovery and obvious content matches, but vague intent-based queries improve when qmd is installed and indexed.
+
+### Background jobs
+
+The current MVP does not start background collection setup, collection update, embedding, watcher, idle, process, or subagent jobs. `backgroundJobs` is currently an empty array, and `qmd-adaptive-search status` reports only the local job-state file if one exists.
+
+Treat the `indexing`, `idle`, and `changeDetection` config fields as forward-compatible settings for future orchestration. For now, run qmd setup/update/embed commands manually using qmd's own documentation, then use `qmd-adaptive-search status` and `qmd-adaptive-search search ...` to verify this package's behavior.
+
 ## CLI
 
 ```text
@@ -199,6 +229,89 @@ Check state:
 ```bash
 qmd-adaptive-search status
 ```
+
+## Troubleshooting
+
+### `qmd was not found`
+
+This is not fatal. The command used fallback search.
+
+Check:
+
+```bash
+qmd-adaptive-search status
+qmd --version
+qmd-adaptive-search install-instructions
+```
+
+Fix options:
+
+```bash
+npm install -g @tobilu/qmd
+# or
+bun add -g @tobilu/qmd
+```
+
+If qmd is installed in a custom location, set `qmdCommand` in `.qmd-adaptive-search/config.json`:
+
+```json
+{
+  "qmdCommand": ["node", "path/to/qmd.js"]
+}
+```
+
+### `qmd search failed; fallback used`
+
+The qmd executable was found, but `qmd search` or `qmd query` failed or timed out. The command still returned fallback results.
+
+Check:
+
+```bash
+qmd-adaptive-search status
+qmd status
+qmd search "product decisions" -n 5
+```
+
+If qmd works but needs more time, raise `search.qmdSearchTimeoutMs` or `search.qmdQueryTimeoutMs` in `.qmd-adaptive-search/config.json`.
+
+### Results miss obvious files
+
+Check that the files are included by config and not excluded:
+
+```bash
+qmd-adaptive-search status
+qmd-adaptive-search configure --preset mixed
+qmd-adaptive-search search "exact term from the file" --scope docs --max 20
+```
+
+Common causes:
+
+- file extension is not in `fileGlobs`;
+- path matches `excludeGlobs` such as `dist/**`, `build/**`, `coverage/**`, `node_modules/**`, or `*.lock`;
+- query is too vague for fallback mode and qmd is not installed/indexed;
+- qmd output did not include parseable project-relative paths.
+
+### Feedback or review does not affect teammates
+
+`feedback` writes local learned aliases/boosts under `.qmd-adaptive-search/local/`, which is ignored by git. To share suggestions, review and approve them:
+
+```bash
+qmd-adaptive-search review
+qmd-adaptive-search review --approve
+```
+
+Approved shared aliases/boosts are written to commit-friendly files in `.qmd-adaptive-search/`.
+
+## Known limitations
+
+- qmd installation is optional, but true semantic search depends on qmd being installed and usable in the project.
+- Collection setup, collection update, embedding orchestration, idle scheduling, and background jobs are not implemented in this MVP.
+- There is no automatic watcher-driven reindex or refresh queue yet.
+- qmd output parsing is path-based; non-path answer text is not converted into results.
+- Fallback search reads a bounded sample of text files and uses simple lexical scoring, so it can miss semantic matches.
+- Raw query text, snippets, and answer text are not persisted; this improves privacy but limits history-based learning.
+- Shared learning is explicit: local feedback stays local until `review --approve` promotes suggestions.
+- File manifest and job-state files are local diagnostics, not authoritative qmd index state.
 
 ## Configuration presets
 

@@ -224,6 +224,92 @@ qmd-adaptive-search review
 qmd-adaptive-search review --approve
 ```
 
+## Team feedback sharing guide
+
+Use this flow when you want local search feedback to become a safe, reviewable team hint:
+
+1. Run a search and pick the useful result.
+   ```bash
+   qmd-adaptive-search search "export decision" --scope docs --max 10
+   qmd-adaptive-search feedback --selected docs/decisions/export.md --rating good
+   ```
+2. Keep using the tool locally. `feedback` immediately updates local learned boosts and aliases under `.qmd-adaptive-search/local/`, but those files are ignored by git.
+3. Review pending suggestions before sharing.
+   ```bash
+   qmd-adaptive-search review
+   ```
+4. Approve only suggestions that are safe and broadly useful.
+   ```bash
+   qmd-adaptive-search review --approve
+   ```
+5. Commit only the shared files that changed:
+   ```bash
+   git diff -- .qmd-adaptive-search/shared-aliases.json .qmd-adaptive-search/shared-boosts.json
+   git add .qmd-adaptive-search/shared-aliases.json .qmd-adaptive-search/shared-boosts.json
+   git commit -m "Share adaptive search feedback"
+   ```
+
+### What gets shared
+
+Approved positive feedback can update two commit-friendly files:
+
+- `.qmd-adaptive-search/shared-aliases.json` maps extracted query anchors to filename terms, helping future vague searches match team vocabulary.
+- `.qmd-adaptive-search/shared-boosts.json` adds small path scores, helping known-good files rank higher.
+
+Example alias diff:
+
+```diff
+ {
+   "aliases": {
++    "export": ["data", "portability", "decision"]
+   }
+ }
+```
+
+Example boost diff:
+
+```diff
+ {
+   "boosts": {
++    "docs/decisions/export.md": 0.05
+   }
+ }
+```
+
+Review these diffs like code. Prefer stable project terms and durable docs. Avoid one-off personal phrasing, private project codenames, customer names, secrets, or paths that reveal sensitive work.
+
+### Privacy checks before sharing
+
+Before `review --approve` and commit, confirm:
+
+- The suggestion does not expose private terms through shared aliases.
+- The boosted path is safe for every teammate who can read the repo.
+- The hint helps future searches beyond your current task.
+- The suggestion came from a real recent result, or you used `--force` intentionally for a low-confidence manual hint.
+
+Raw query text, snippets, answer text, file contents, and query hashes are not persisted. Pending suggestions contain extracted anchors and selected project-relative paths, so still review them before sharing.
+
+### Privacy preset intent
+
+Use the `privacy` preset when a repo should avoid automatic indexing/update behavior and keep learning local until an explicit review:
+
+```bash
+qmd-adaptive-search configure --preset privacy
+```
+
+The preset disables automatic update/embed settings, disables the local file manifest, keeps pending learning local, and leaves shared writes behind explicit `review --approve`. It is useful for sensitive notes, client work, or repos where teammates want manual control over what search state is generated and shared.
+
+### Bad feedback policy
+
+Bad feedback is intentionally conservative in the MVP:
+
+```bash
+qmd-adaptive-search feedback --selected docs/old-export-plan.md --rating bad
+qmd-adaptive-search review
+```
+
+Negative feedback is stored in pending suggestions for review context only. It does not apply a negative ranking, suppress paths, or write shared demotions yet. Treat bad feedback as a signal to inspect why a result was misleading, then fix the safer source of noise: rename unclear files, improve docs, narrow `fileGlobs`, add `excludeGlobs`, or avoid approving aliases/boosts that would reinforce the bad match.
+
 Check state:
 
 ```bash

@@ -46,7 +46,7 @@ function initProject(root = process.cwd(), options = {}) {
     createJsonIfMissing(p.learnedBoosts, { boosts: {} });
     createTextIfMissing(p.pendingSuggestions, '');
     createJsonIfMissing(p.fileManifest, { files: [], updatedAt: null });
-    createJsonIfMissing(p.jobState, { currentJob: null, lastUpdateJob: null, lastEmbedJob: null, suppressions: {} });
+    createJsonIfMissing(p.jobState, { currentJob: null, lastSetupJob: null, lastUpdateJob: null, lastEmbedJob: null, suppressions: {} });
     createJsonIfMissing(p.recentSearches, { searches: [] });
     const gitignoreUpdated = updateGitignore(root);
     return { ok: true, configDir: CONFIG_DIR, created, gitignoreUpdated };

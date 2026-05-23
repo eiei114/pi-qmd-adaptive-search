@@ -154,11 +154,32 @@ Missing qmd is supported. Search still:
 
 Expected trade-off: fallback search is lexical, not semantic. It is useful for file discovery and obvious content matches, but vague intent-based queries improve when qmd is installed and indexed.
 
+### qmd setup/update/embed safety
+
+Heavy qmd operations never run implicitly. Use `status` to see the next recommended qmd step and a safe command to inspect the plan:
+
+```bash
+qmd-adaptive-search status
+qmd-adaptive-search qmd setup --dry-run
+qmd-adaptive-search qmd update --dry-run
+qmd-adaptive-search qmd embed --dry-run
+```
+
+Each plan shows the target, side effects, estimated time, the qmd command that would run, and the next command to use after failure. Running without `--dry-run` prompts for confirmation. Non-interactive runs must pass `--yes` explicitly:
+
+```bash
+qmd-adaptive-search qmd setup --yes
+qmd-adaptive-search qmd update --yes
+qmd-adaptive-search qmd embed --yes
+```
+
+`setup` creates or updates a qmd collection for the current project path, `update` re-indexes qmd collections, and `embed` generates missing vector embeddings. Failures return a human-readable error plus the next safe command.
+
 ### Background jobs
 
 The current MVP does not start background collection setup, collection update, embedding, watcher, idle, process, or subagent jobs. `backgroundJobs` is currently an empty array, and `qmd-adaptive-search status` reports only the local job-state file if one exists.
 
-Treat the `indexing`, `idle`, and `changeDetection` config fields as forward-compatible settings for future orchestration. For now, run qmd setup/update/embed commands manually using qmd's own documentation, then use `qmd-adaptive-search status` and `qmd-adaptive-search search ...` to verify this package's behavior.
+Treat the `indexing`, `idle`, and `changeDetection` config fields as forward-compatible settings for future orchestration. Use the explicit `qmd-adaptive-search qmd setup|update|embed --dry-run` plan commands before running qmd maintenance.
 
 ## CLI
 
@@ -170,6 +191,7 @@ qmd-adaptive-search status
 qmd-adaptive-search configure --preset docs|mixed|code|privacy [--reset]
 qmd-adaptive-search review [--approve]
 qmd-adaptive-search install-qmd [--manager bun|npm|pnpm|yarn] [--yes]
+qmd-adaptive-search qmd setup|update|embed [--dry-run] [--yes]
 ```
 
 Short alias:
@@ -196,6 +218,9 @@ Pi slash commands:
 | `/qmd-adaptive-review approve` | Promote pending suggestions to shared aliases/boosts |
 | `/qmd-adaptive-configure <preset>` | Apply `docs`, `mixed`, `code`, or `privacy` preset |
 | `/qmd-adaptive-install-qmd` | Show qmd install guidance |
+| `/qmd-adaptive-qmd-setup` | Show qmd collection setup plan; pass `--yes` to run |
+| `/qmd-adaptive-qmd-update` | Show qmd update plan; pass `--yes` to run |
+| `/qmd-adaptive-qmd-embed` | Show qmd embed plan; pass `--yes` to run |
 
 ## Examples
 
@@ -228,6 +253,15 @@ Check state:
 
 ```bash
 qmd-adaptive-search status
+```
+
+Review qmd maintenance before running it:
+
+```bash
+qmd-adaptive-search qmd setup --dry-run
+qmd-adaptive-search qmd setup --yes
+qmd-adaptive-search qmd update --dry-run
+qmd-adaptive-search qmd embed --dry-run
 ```
 
 ## Troubleshooting
@@ -305,7 +339,7 @@ Approved shared aliases/boosts are written to commit-friendly files in `.qmd-ada
 ## Known limitations
 
 - qmd installation is optional, but true semantic search depends on qmd being installed and usable in the project.
-- Collection setup, collection update, embedding orchestration, idle scheduling, and background jobs are not implemented in this MVP.
+- Collection setup, collection update, and embedding are explicit plan/confirm commands only; automatic orchestration, idle scheduling, and background jobs are not implemented in this MVP.
 - There is no automatic watcher-driven reindex or refresh queue yet.
 - qmd output parsing is path-based; non-path answer text is not converted into results.
 - Fallback search reads a bounded sample of text files and uses simple lexical scoring, so it can miss semantic matches.

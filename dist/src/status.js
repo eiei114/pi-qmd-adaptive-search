@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import { initProject, loadConfig, paths } from './config.js';
 import { detectQmd } from './qmd.js';
 import { readJson, readJsonLines } from './fs-utils.js';
+import { nextQmdOperation } from './qmd-operations.js';
 function countObject(file, key) {
     return Object.keys(readJson(file, { [key]: {} })[key] || {}).length;
 }
@@ -12,7 +13,7 @@ function adaptiveStatus(options = {}) {
     const p = paths(root);
     const qmd = detectQmd(config, root);
     const manifest = readJson(p.fileManifest, { files: [], updatedAt: null });
-    const jobState = readJson(p.jobState, { currentJob: null, lastUpdateJob: null, lastEmbedJob: null, suppressions: {} });
+    const jobState = readJson(p.jobState, { currentJob: null, lastSetupJob: null, lastUpdateJob: null, lastEmbedJob: null, suppressions: {} });
     const recent = readJson(p.recentSearches, { searches: [] });
     return {
         configPath: p.config,
@@ -30,6 +31,8 @@ function adaptiveStatus(options = {}) {
         pendingSuggestions: readJsonLines(p.pendingSuggestions).length,
         manifest: { enabled: !!config.changeDetection?.manifestEnabled, files: (manifest.files || []).length, updatedAt: manifest.updatedAt },
         backgroundJob: jobState.currentJob,
+        qmdNextOperation: nextQmdOperation(root, config, qmd, jobState),
+        lastSetupJob: jobState.lastSetupJob,
         lastUpdateJob: jobState.lastUpdateJob,
         lastEmbedJob: jobState.lastEmbedJob,
         suppressions: jobState.suppressions || {},

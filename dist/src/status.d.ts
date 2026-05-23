@@ -22,6 +22,12 @@ declare function adaptiveStatus(options?: any): {
         updatedAt: any;
     };
     backgroundJob: any;
+    qmdNextOperation: {
+        operation: string;
+        reason: string;
+        command: string;
+    };
+    lastSetupJob: any;
     lastUpdateJob: any;
     lastEmbedJob: any;
     suppressions: any;

@@ -458,6 +458,16 @@ npm run build
 node bin/qmd-adaptive-search.js search "product decisions" --max 3
 ```
 
+## Release
+
+Publishing to npm is automated by GitHub Actions. To publish a new version:
+
+1. Update `version` in `package.json` and document user-visible changes in `CHANGELOG.md`.
+2. Commit and tag the release, for example `v0.1.1`, or create a GitHub Release for that tag.
+3. The `Publish to npm` workflow runs `npm run check`, skips if that exact version already exists on npm, and runs `npm publish --access public --provenance`.
+
+The workflow supports npm trusted publishing via GitHub OIDC. If trusted publishing is not configured on npm, add an `NPM_TOKEN` repository secret.
+
 ## Versioning policy
 
 ```text

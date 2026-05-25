@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 This project follows a pragmatic `0.x` versioning policy: APIs and config may change before `1.0.0`.
 
+## [0.2.0] - 2026-05-26
+
+### Added
+- qmd operation planning helper.
+- qmd job state recording.
+- Test coverage for qmd detection and fallback search.
+- Feedback sharing guide documentation.
+- Automated npm publishing CI workflow.
+- Updated package publish workflow.
+
 ## [0.1.0] - 2026-05-21
 
 ### Added

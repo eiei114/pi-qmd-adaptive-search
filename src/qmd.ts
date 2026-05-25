@@ -119,7 +119,7 @@ function qmdSearch(query, maxResults, config, root = process.cwd(), options: any
   const detected = detectQmd(config, root);
   if (!detected.available) return { detected, results: [], error: 'qmd not found' };
   const search = runCommand(detected.command, ['search', query, '-n', String(maxResults)], { cwd: root, timeoutMs: config.search?.qmdSearchTimeoutMs || 15000 });
-  if (search.status !== 0) return { detected, results: [], error: search.stderr || String(search.error || 'qmd search failed') };
+  if (search.status !== 0) return { detected, results: [], error: search.stderr || String(search.error || 'qmd search failed'), method: 'search' };
 
   const searchResults = parseQmdSearchOutput(search.stdout, root);
   if (searchResults.length > 0) return { detected, results: searchResults, raw: search.stdout, method: 'search' };
@@ -127,7 +127,7 @@ function qmdSearch(query, maxResults, config, root = process.cwd(), options: any
   if (!options.useQueryFallback) return { detected, results: [], raw: search.stdout, method: 'search' };
 
   const semantic = runCommand(detected.command, ['query', query, '-n', String(maxResults)], { cwd: root, timeoutMs: config.search?.qmdQueryTimeoutMs || 45000 });
-  if (semantic.status !== 0) return { detected, results: [], error: semantic.stderr || String(semantic.error || 'qmd query failed'), raw: search.stdout };
+  if (semantic.status !== 0) return { detected, results: [], error: semantic.stderr || String(semantic.error || 'qmd query failed'), raw: search.stdout, method: 'query' };
   return {
     detected,
     results: parseQmdSearchOutput(semantic.stdout, root).map((result) => ({ ...result, why: ['qmd query match'] })),

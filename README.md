@@ -177,7 +177,9 @@ qmd-adaptive-search qmd embed --yes
 
 ### Background jobs
 
-The current MVP does not start background collection setup, collection update, embedding, watcher, idle, process, or subagent jobs. `backgroundJobs` is currently an empty array, and `qmd-adaptive-search status` reports only the local job-state file if one exists.
+The current MVP does not start long-running collection setup, collection update, embedding, watcher, idle, process, or subagent jobs. It does record each synchronous qmd search/query attempt in `.qmd-adaptive-search/local/job-state.json`, including the last job, pending/running jobs, failures, qmd command metadata, result counts, and recovery hints.
+
+`qmd-adaptive-search search ...` returns `backgroundJobs` with the latest operation state. `qmd-adaptive-search status` expands this into `backgroundJobs`, `pendingBackgroundJobs`, `failedBackgroundJobs`, `lastBackgroundJob`, `lastSearchJob`, and `recoveryHints`.
 
 Treat the `indexing`, `idle`, and `changeDetection` config fields as forward-compatible settings for future orchestration. Use the explicit `qmd-adaptive-search qmd setup|update|embed --dry-run` plan commands before running qmd maintenance.
 
@@ -339,7 +341,7 @@ Approved shared aliases/boosts are written to commit-friendly files in `.qmd-ada
 ## Known limitations
 
 - qmd installation is optional, but true semantic search depends on qmd being installed and usable in the project.
-- Collection setup, collection update, and embedding are explicit plan/confirm commands only; automatic orchestration, idle scheduling, and background jobs are not implemented in this MVP.
+- Collection setup, collection update, and embedding are explicit plan/confirm commands only; automatic orchestration and idle scheduling are not implemented in this MVP. qmd search and confirmed qmd operations record lightweight local job state for status/recovery visibility.
 - There is no automatic watcher-driven reindex or refresh queue yet.
 - qmd output parsing is path-based; non-path answer text is not converted into results.
 - Fallback search reads a bounded sample of text files and uses simple lexical scoring, so it can miss semantic matches.

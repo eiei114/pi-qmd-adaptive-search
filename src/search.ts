@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { initProject, loadConfig, paths } from './config.js';
 import { qmdSearch, installInstructions } from './qmd.js';
 import { readJson, writeJson, toPosix } from './fs-utils.js';
+import { backgroundJobsForResult, finishQmdSearchJob, readJobState, startQmdSearchJob } from './job-state.js';
 
 const TEXT_EXTS = new Set(['.md', '.txt', '.ts', '.tsx', '.js', '.py', '.json', '.yaml', '.yml']);
 
@@ -165,7 +166,6 @@ function adaptiveSearch(input, options: any = {}) {
   initProject(root);
   const config = loadConfig(root);
   const warnings = [];
-  const backgroundJobs = [];
   const maxResults = Math.min(Number(input.maxResults || config.search.defaultMaxResults || 10), Number(config.search.hardMaxResults || 30));
   const mode = inferMode(input.query, input.mode || config.search.defaultModeBias || 'auto');
   const scopeHints = Array.isArray(input.scopeHint) ? input.scopeHint : (input.scopeHint ? [input.scopeHint] : []);
@@ -175,7 +175,9 @@ function adaptiveSearch(input, options: any = {}) {
   const boostEntries = loadBoosts(root);
 
   const useQueryFallback = config.search?.qmdQueryFallback === true || ['article', 'project', 'recall'].includes(mode);
+  const qmdJob = startQmdSearchJob(root, { mode, maxResults, scopeHints });
   const qmd = qmdSearch(input.query, maxResults, config, root, { useQueryFallback });
+  finishQmdSearchJob(root, qmdJob, qmd);
   if (!qmd.detected.available) warnings.push(installInstructions());
   else if (qmd.error) warnings.push(`qmd search failed; fallback used: ${String(qmd.error).slice(0, 240)}`);
 
@@ -212,6 +214,7 @@ function adaptiveSearch(input, options: any = {}) {
     }));
 
   rememberSearch(root, config, { mode, resultPaths: results.map((r) => r.path), anchors: queryTerms });
+  const backgroundJobs = backgroundJobsForResult(readJobState(root));
   return { results, warnings, backgroundJobs };
 }
 

@@ -1,7 +1,8 @@
 import path from 'node:path';
-import { initProject, loadConfig, paths } from './config.js';
+import { initProject, loadConfig } from './config.js';
 import { detectQmd, installInstructions, runCommand } from './qmd.js';
-import { readJson, writeJson, toPosix } from './fs-utils.js';
+import { toPosix } from './fs-utils.js';
+import { finishBackgroundJob, startBackgroundJob } from './job-state.js';
 const OPERATIONS = new Set(['setup', 'update', 'embed']);
 function collectionNameFor(root, options = {}) {
     return String(options.name || path.basename(root) || 'project').replace(/[^a-zA-Z0-9_.-]+/g, '-');
@@ -78,11 +79,6 @@ function qmdOperationPlan(operation, options = {}, runtime = {}) {
         warnings: qmd.available ? [] : [installInstructions()]
     };
 }
-function recordJob(root, patch) {
-    const p = paths(root);
-    const current = readJson(p.jobState, { currentJob: null, lastSetupJob: null, lastUpdateJob: null, lastEmbedJob: null, suppressions: {} });
-    writeJson(p.jobState, { ...current, ...patch });
-}
 function failureHint(operation, errorText) {
     return [
         `qmd ${operation} failed.`,
@@ -100,14 +96,25 @@ function runQmdOperation(operation, options = {}, runtime = {}) {
         return { ok: false, confirmationRequired: true, plan, nextCommand: plan.confirmCommand };
     if (!plan.qmdAvailable)
         return { ok: false, plan, error: 'qmd not found', humanMessage: installInstructions(), nextCommand: 'qmd-adaptive-search install-qmd' };
-    const startedAt = new Date().toISOString();
-    recordJob(root, { currentJob: { operation, command: plan.command, startedAt } });
+    const startedJob = startBackgroundJob(root, {
+        type: `qmd-${operation}`,
+        input: { operation, command: plan.command },
+        qmd: { available: plan.qmdAvailable, command: plan.qmdCommand, method: operation }
+    });
     const [bin, ...args] = plan.command;
     const result = runCommand([bin], args, { cwd: root, timeoutMs: options.timeoutMs || 30 * 60 * 1000 });
     const finishedAt = new Date().toISOString();
     const errorText = (result.stderr || result.error || '').toString().trim();
     if (result.status !== 0) {
-        recordJob(root, { currentJob: null });
+        finishBackgroundJob(root, startedJob, {
+            operation,
+            status: 'failed',
+            finishedAt,
+            qmd: { available: plan.qmdAvailable, command: plan.qmdCommand, method: operation },
+            result: { ok: false, status: result.status },
+            error: errorText || `qmd ${operation} failed`,
+            recoveryHint: failureHint(operation, errorText)
+        });
         return {
             ok: false,
             plan,
@@ -119,8 +126,13 @@ function runQmdOperation(operation, options = {}, runtime = {}) {
             nextCommand: plan.dryRunCommand
         };
     }
-    const lastKey = operation === 'setup' ? 'lastSetupJob' : operation === 'update' ? 'lastUpdateJob' : 'lastEmbedJob';
-    recordJob(root, { currentJob: null, [lastKey]: { operation, command: plan.command, startedAt, finishedAt, status: result.status } });
+    finishBackgroundJob(root, startedJob, {
+        operation,
+        status: 'completed',
+        finishedAt,
+        qmd: { available: plan.qmdAvailable, command: plan.qmdCommand, method: operation },
+        result: { ok: true, status: result.status }
+    });
     return { ok: true, plan, status: result.status, stdout: result.stdout || '', stderr: result.stderr || '' };
 }
 function nextQmdOperation(root, config, qmd, jobState) {

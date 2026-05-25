@@ -13,6 +13,7 @@ function emptyJobState() {
     failedJobs: [],
     recentJobs: [],
     lastJob: null,
+    lastSetupJob: null,
     lastSearchJob: null,
     lastUpdateJob: null,
     lastEmbedJob: null,
@@ -45,6 +46,7 @@ function compactJob(job) {
   return {
     id: job.id,
     type: job.type,
+    operation: job.operation || job.input?.operation || null,
     status: job.status,
     startedAt: job.startedAt,
     finishedAt: job.finishedAt || null,
@@ -116,6 +118,7 @@ function finishBackgroundJob(root, runningJob, patch: any = {}) {
     failedJobs,
     recentJobs,
     lastJob: finished,
+    lastSetupJob: finished.type === 'qmd-setup' ? finished : state.lastSetupJob,
     lastSearchJob: ['qmd-search', 'qmd-query'].includes(finished.type) ? finished : state.lastSearchJob,
     lastUpdateJob: finished.type === 'qmd-update' ? finished : state.lastUpdateJob,
     lastEmbedJob: finished.type === 'qmd-embed' ? finished : state.lastEmbedJob
@@ -188,6 +191,7 @@ function backgroundJobSummary(state) {
     failed: (normalized.failedJobs || []).map(compactJob),
     recent: (normalized.recentJobs || []).map(compactJob),
     lastJob: compactJob(normalized.lastJob),
+    lastSetupJob: compactJob(normalized.lastSetupJob),
     lastSearchJob: compactJob(normalized.lastSearchJob),
     lastUpdateJob: compactJob(normalized.lastUpdateJob),
     lastEmbedJob: compactJob(normalized.lastEmbedJob),

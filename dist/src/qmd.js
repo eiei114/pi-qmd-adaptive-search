@@ -169,5 +169,5 @@ function installInstructions() {
         '{ "qmdCommand": ["node", "path/to/qmd.js"] }'
     ].join('\n');
 }
-export { detectQmd, qmdSearch, parseQmdSearchOutput, installInstructions };
+export { detectQmd, qmdSearch, parseQmdSearchOutput, installInstructions, runCommand };
 //# sourceMappingURL=qmd.js.map

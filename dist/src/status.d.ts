@@ -25,6 +25,7 @@ declare function adaptiveStatus(options?: any): {
         currentJob: {
             id: any;
             type: any;
+            operation: any;
             status: any;
             startedAt: any;
             finishedAt: any;
@@ -39,6 +40,19 @@ declare function adaptiveStatus(options?: any): {
         lastJob: {
             id: any;
             type: any;
+            operation: any;
+            status: any;
+            startedAt: any;
+            finishedAt: any;
+            qmd: any;
+            result: any;
+            error: any;
+            recoveryHint: any;
+        };
+        lastSetupJob: {
+            id: any;
+            type: any;
+            operation: any;
             status: any;
             startedAt: any;
             finishedAt: any;
@@ -50,6 +64,7 @@ declare function adaptiveStatus(options?: any): {
         lastSearchJob: {
             id: any;
             type: any;
+            operation: any;
             status: any;
             startedAt: any;
             finishedAt: any;
@@ -61,6 +76,7 @@ declare function adaptiveStatus(options?: any): {
         lastUpdateJob: {
             id: any;
             type: any;
+            operation: any;
             status: any;
             startedAt: any;
             finishedAt: any;
@@ -72,6 +88,7 @@ declare function adaptiveStatus(options?: any): {
         lastEmbedJob: {
             id: any;
             type: any;
+            operation: any;
             status: any;
             startedAt: any;
             finishedAt: any;
@@ -90,6 +107,7 @@ declare function adaptiveStatus(options?: any): {
     backgroundJob: {
         id: any;
         type: any;
+        operation: any;
         status: any;
         startedAt: any;
         finishedAt: any;
@@ -103,6 +121,24 @@ declare function adaptiveStatus(options?: any): {
     lastBackgroundJob: {
         id: any;
         type: any;
+        operation: any;
+        status: any;
+        startedAt: any;
+        finishedAt: any;
+        qmd: any;
+        result: any;
+        error: any;
+        recoveryHint: any;
+    };
+    qmdNextOperation: {
+        operation: string;
+        reason: string;
+        command: string;
+    };
+    lastSetupJob: {
+        id: any;
+        type: any;
+        operation: any;
         status: any;
         startedAt: any;
         finishedAt: any;
@@ -114,6 +150,7 @@ declare function adaptiveStatus(options?: any): {
     lastSearchJob: {
         id: any;
         type: any;
+        operation: any;
         status: any;
         startedAt: any;
         finishedAt: any;
@@ -125,6 +162,7 @@ declare function adaptiveStatus(options?: any): {
     lastUpdateJob: {
         id: any;
         type: any;
+        operation: any;
         status: any;
         startedAt: any;
         finishedAt: any;
@@ -136,6 +174,7 @@ declare function adaptiveStatus(options?: any): {
     lastEmbedJob: {
         id: any;
         type: any;
+        operation: any;
         status: any;
         startedAt: any;
         finishedAt: any;

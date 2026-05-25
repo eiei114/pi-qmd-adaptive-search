@@ -8,7 +8,9 @@ import {
   applyPreset,
   reviewSuggestions,
   approveSuggestions,
-  installInstructions
+  installInstructions,
+  qmdOperationPlan,
+  runQmdOperation
 } from '../dist/src/index.js';
 
 function textResult(text, details = {}) {
@@ -101,6 +103,18 @@ function registerCommands(pi: ExtensionAPI) {
     description: 'Show qmd install instructions',
     handler: async () => textResult(installInstructions())
   });
+
+  for (const operation of ['setup', 'update', 'embed']) {
+    pi.registerCommand(`qmd-adaptive-qmd-${operation}`, {
+      description: `Show qmd ${operation} plan; pass --yes to run after review`,
+      handler: async (args, ctx) => {
+        const text = String(args || '');
+        const options = { yes: /(^|\s)--yes(\s|$)/.test(text), dryRun: !/(^|\s)--yes(\s|$)/.test(text) };
+        if (!options.yes) return jsonResult({ plan: qmdOperationPlan(operation, {}, { root: ctx.cwd }) });
+        return jsonResult(runQmdOperation(operation, options, { root: ctx.cwd }));
+      }
+    });
+  }
 }
 
 export default function qmdAdaptiveSearchExtension(pi: ExtensionAPI) {

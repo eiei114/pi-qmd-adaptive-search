@@ -52,6 +52,7 @@ function initProject(root = process.cwd(), options = {}) {
         failedJobs: [],
         recentJobs: [],
         lastJob: null,
+        lastSetupJob: null,
         lastSearchJob: null,
         lastUpdateJob: null,
         lastEmbedJob: null,

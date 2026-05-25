@@ -3,6 +3,7 @@ import { initProject, loadConfig, paths } from './config.js';
 import { detectQmd } from './qmd.js';
 import { readJson, readJsonLines } from './fs-utils.js';
 import { backgroundJobSummary, readJobState } from './job-state.js';
+import { nextQmdOperation } from './qmd-operations.js';
 function countObject(file, key) {
     return Object.keys(readJson(file, { [key]: {} })[key] || {}).length;
 }
@@ -36,6 +37,8 @@ function adaptiveStatus(options = {}) {
         pendingBackgroundJobs: backgroundJobs.pending,
         failedBackgroundJobs: backgroundJobs.failed,
         lastBackgroundJob: backgroundJobs.lastJob,
+        qmdNextOperation: nextQmdOperation(root, config, qmd, jobState),
+        lastSetupJob: backgroundJobs.lastSetupJob,
         lastSearchJob: backgroundJobs.lastSearchJob,
         lastUpdateJob: backgroundJobs.lastUpdateJob,
         lastEmbedJob: backgroundJobs.lastEmbedJob,

@@ -154,13 +154,34 @@ Missing qmd is supported. Search still:
 
 Expected trade-off: fallback search is lexical, not semantic. It is useful for file discovery and obvious content matches, but vague intent-based queries improve when qmd is installed and indexed.
 
+### qmd setup/update/embed safety
+
+Heavy qmd operations never run implicitly. Use `status` to see the next recommended qmd step and a safe command to inspect the plan:
+
+```bash
+qmd-adaptive-search status
+qmd-adaptive-search qmd setup --dry-run
+qmd-adaptive-search qmd update --dry-run
+qmd-adaptive-search qmd embed --dry-run
+```
+
+Each plan shows the target, side effects, estimated time, the qmd command that would run, and the next command to use after failure. Running without `--dry-run` prompts for confirmation. Non-interactive runs must pass `--yes` explicitly:
+
+```bash
+qmd-adaptive-search qmd setup --yes
+qmd-adaptive-search qmd update --yes
+qmd-adaptive-search qmd embed --yes
+```
+
+`setup` creates or updates a qmd collection for the current project path, `update` re-indexes qmd collections, and `embed` generates missing vector embeddings. Failures return a human-readable error plus the next safe command.
+
 ### Background jobs
 
 The current MVP does not start long-running collection setup, collection update, embedding, watcher, idle, process, or subagent jobs. It does record each synchronous qmd search/query attempt in `.qmd-adaptive-search/local/job-state.json`, including the last job, pending/running jobs, failures, qmd command metadata, result counts, and recovery hints.
 
 `qmd-adaptive-search search ...` returns `backgroundJobs` with the latest operation state. `qmd-adaptive-search status` expands this into `backgroundJobs`, `pendingBackgroundJobs`, `failedBackgroundJobs`, `lastBackgroundJob`, `lastSearchJob`, and `recoveryHints`.
 
-Treat the `indexing`, `idle`, and `changeDetection` config fields as forward-compatible settings for future orchestration. For now, run qmd setup/update/embed commands manually using qmd's own documentation, then use `qmd-adaptive-search status` and `qmd-adaptive-search search ...` to verify this package's behavior.
+Treat the `indexing`, `idle`, and `changeDetection` config fields as forward-compatible settings for future orchestration. Use the explicit `qmd-adaptive-search qmd setup|update|embed --dry-run` plan commands before running qmd maintenance.
 
 ## CLI
 
@@ -172,6 +193,7 @@ qmd-adaptive-search status
 qmd-adaptive-search configure --preset docs|mixed|code|privacy [--reset]
 qmd-adaptive-search review [--approve]
 qmd-adaptive-search install-qmd [--manager bun|npm|pnpm|yarn] [--yes]
+qmd-adaptive-search qmd setup|update|embed [--dry-run] [--yes]
 ```
 
 Short alias:
@@ -198,6 +220,9 @@ Pi slash commands:
 | `/qmd-adaptive-review approve` | Promote pending suggestions to shared aliases/boosts |
 | `/qmd-adaptive-configure <preset>` | Apply `docs`, `mixed`, `code`, or `privacy` preset |
 | `/qmd-adaptive-install-qmd` | Show qmd install guidance |
+| `/qmd-adaptive-qmd-setup` | Show qmd collection setup plan; pass `--yes` to run |
+| `/qmd-adaptive-qmd-update` | Show qmd update plan; pass `--yes` to run |
+| `/qmd-adaptive-qmd-embed` | Show qmd embed plan; pass `--yes` to run |
 
 ## Examples
 
@@ -226,10 +251,105 @@ qmd-adaptive-search review
 qmd-adaptive-search review --approve
 ```
 
+## Team feedback sharing guide
+
+Use this flow when you want local search feedback to become a safe, reviewable team hint:
+
+1. Run a search and pick the useful result.
+   ```bash
+   qmd-adaptive-search search "export decision" --scope docs --max 10
+   qmd-adaptive-search feedback --selected docs/decisions/export.md --rating good
+   ```
+2. Keep using the tool locally. `feedback` immediately updates local learned boosts and aliases under `.qmd-adaptive-search/local/`, but those files are ignored by git.
+3. Review pending suggestions before sharing.
+   ```bash
+   qmd-adaptive-search review
+   ```
+4. Approve only suggestions that are safe and broadly useful.
+   ```bash
+   qmd-adaptive-search review --approve
+   ```
+5. Commit only the shared files that changed:
+   ```bash
+   git diff -- .qmd-adaptive-search/shared-aliases.json .qmd-adaptive-search/shared-boosts.json
+   git add .qmd-adaptive-search/shared-aliases.json .qmd-adaptive-search/shared-boosts.json
+   git commit -m "Share adaptive search feedback"
+   ```
+
+### What gets shared
+
+Approved positive feedback can update two commit-friendly files:
+
+- `.qmd-adaptive-search/shared-aliases.json` maps extracted query anchors to filename terms, helping future vague searches match team vocabulary.
+- `.qmd-adaptive-search/shared-boosts.json` adds small path scores, helping known-good files rank higher.
+
+Example alias diff:
+
+```diff
+ {
+   "aliases": {
++    "export": ["data", "portability", "decision"]
+   }
+ }
+```
+
+Example boost diff:
+
+```diff
+ {
+   "boosts": {
++    "docs/decisions/export.md": 0.05
+   }
+ }
+```
+
+Review these diffs like code. Prefer stable project terms and durable docs. Avoid one-off personal phrasing, private project codenames, customer names, secrets, or paths that reveal sensitive work.
+
+### Privacy checks before sharing
+
+Before `review --approve` and commit, confirm:
+
+- The suggestion does not expose private terms through shared aliases.
+- The boosted path is safe for every teammate who can read the repo.
+- The hint helps future searches beyond your current task.
+- The suggestion came from a real recent result, or you used `--force` intentionally for a low-confidence manual hint.
+
+Raw query text, snippets, answer text, file contents, and query hashes are not persisted. Pending suggestions contain extracted anchors and selected project-relative paths, so still review them before sharing.
+
+### Privacy preset intent
+
+Use the `privacy` preset when a repo should avoid automatic indexing/update behavior and keep learning local until an explicit review:
+
+```bash
+qmd-adaptive-search configure --preset privacy
+```
+
+The preset disables automatic update/embed settings, disables the local file manifest, keeps pending learning local, and leaves shared writes behind explicit `review --approve`. It is useful for sensitive notes, client work, or repos where teammates want manual control over what search state is generated and shared.
+
+### Bad feedback policy
+
+Bad feedback is intentionally conservative in the MVP:
+
+```bash
+qmd-adaptive-search feedback --selected docs/old-export-plan.md --rating bad
+qmd-adaptive-search review
+```
+
+Negative feedback is stored in pending suggestions for review context only. It does not apply a negative ranking, suppress paths, or write shared demotions yet. Treat bad feedback as a signal to inspect why a result was misleading, then fix the safer source of noise: rename unclear files, improve docs, narrow `fileGlobs`, add `excludeGlobs`, or avoid approving aliases/boosts that would reinforce the bad match.
+
 Check state:
 
 ```bash
 qmd-adaptive-search status
+```
+
+Review qmd maintenance before running it:
+
+```bash
+qmd-adaptive-search qmd setup --dry-run
+qmd-adaptive-search qmd setup --yes
+qmd-adaptive-search qmd update --dry-run
+qmd-adaptive-search qmd embed --dry-run
 ```
 
 ## Troubleshooting
@@ -307,7 +427,7 @@ Approved shared aliases/boosts are written to commit-friendly files in `.qmd-ada
 ## Known limitations
 
 - qmd installation is optional, but true semantic search depends on qmd being installed and usable in the project.
-- Collection setup, collection update, embedding orchestration, idle scheduling, and long-running background jobs are not implemented in this MVP.
+- Collection setup, collection update, and embedding are explicit plan/confirm commands only; automatic orchestration and idle scheduling are not implemented in this MVP. qmd search and confirmed qmd operations record lightweight local job state for status/recovery visibility.
 - There is no automatic watcher-driven reindex or refresh queue yet.
 - qmd output parsing is path-based; non-path answer text is not converted into results.
 - Fallback search reads a bounded sample of text files and uses simple lexical scoring, so it can miss semantic matches.
@@ -425,6 +545,16 @@ npm run smoke
 npm run build
 node bin/qmd-adaptive-search.js search "product decisions" --max 3
 ```
+
+## Release
+
+Publishing to npm is automated by GitHub Actions. To publish a new version:
+
+1. Update `version` in `package.json` and document user-visible changes in `CHANGELOG.md`.
+2. Commit and tag the release, for example `v0.1.1`, or create a GitHub Release for that tag.
+3. The `Publish to npm` workflow runs `npm run check`, skips if that exact version already exists on npm, and runs `npm publish --access public --provenance`.
+
+The workflow supports npm trusted publishing via GitHub OIDC. If trusted publishing is not configured on npm, add an `NPM_TOKEN` repository secret.
 
 ## Versioning policy
 

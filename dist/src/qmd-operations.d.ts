@@ -1,0 +1,135 @@
+declare function qmdOperationPlan(operation: any, options?: any, runtime?: any): {
+    operation: any;
+    qmdAvailable: any;
+    qmdCommand: any;
+    command: any[];
+    target: any;
+    sideEffects: any;
+    estimatedTime: any;
+    dryRunCommand: string;
+    confirmCommand: string;
+    nextCommandOnFailure: string;
+    warnings: string[];
+};
+declare function runQmdOperation(operation: any, options?: any, runtime?: any): {
+    ok: boolean;
+    dryRun: boolean;
+    plan: {
+        operation: any;
+        qmdAvailable: any;
+        qmdCommand: any;
+        command: any[];
+        target: any;
+        sideEffects: any;
+        estimatedTime: any;
+        dryRunCommand: string;
+        confirmCommand: string;
+        nextCommandOnFailure: string;
+        warnings: string[];
+    };
+    confirmationRequired?: undefined;
+    nextCommand?: undefined;
+    error?: undefined;
+    humanMessage?: undefined;
+    status?: undefined;
+    stdout?: undefined;
+    stderr?: undefined;
+} | {
+    ok: boolean;
+    confirmationRequired: boolean;
+    plan: {
+        operation: any;
+        qmdAvailable: any;
+        qmdCommand: any;
+        command: any[];
+        target: any;
+        sideEffects: any;
+        estimatedTime: any;
+        dryRunCommand: string;
+        confirmCommand: string;
+        nextCommandOnFailure: string;
+        warnings: string[];
+    };
+    nextCommand: string;
+    dryRun?: undefined;
+    error?: undefined;
+    humanMessage?: undefined;
+    status?: undefined;
+    stdout?: undefined;
+    stderr?: undefined;
+} | {
+    ok: boolean;
+    plan: {
+        operation: any;
+        qmdAvailable: any;
+        qmdCommand: any;
+        command: any[];
+        target: any;
+        sideEffects: any;
+        estimatedTime: any;
+        dryRunCommand: string;
+        confirmCommand: string;
+        nextCommandOnFailure: string;
+        warnings: string[];
+    };
+    error: string;
+    humanMessage: string;
+    nextCommand: string;
+    dryRun?: undefined;
+    confirmationRequired?: undefined;
+    status?: undefined;
+    stdout?: undefined;
+    stderr?: undefined;
+} | {
+    ok: boolean;
+    plan: {
+        operation: any;
+        qmdAvailable: any;
+        qmdCommand: any;
+        command: any[];
+        target: any;
+        sideEffects: any;
+        estimatedTime: any;
+        dryRunCommand: string;
+        confirmCommand: string;
+        nextCommandOnFailure: string;
+        warnings: string[];
+    };
+    status: any;
+    stdout: any;
+    stderr: any;
+    error: any;
+    humanMessage: string;
+    nextCommand: string;
+    dryRun?: undefined;
+    confirmationRequired?: undefined;
+} | {
+    ok: boolean;
+    plan: {
+        operation: any;
+        qmdAvailable: any;
+        qmdCommand: any;
+        command: any[];
+        target: any;
+        sideEffects: any;
+        estimatedTime: any;
+        dryRunCommand: string;
+        confirmCommand: string;
+        nextCommandOnFailure: string;
+        warnings: string[];
+    };
+    status: any;
+    stdout: any;
+    stderr: any;
+    dryRun?: undefined;
+    confirmationRequired?: undefined;
+    nextCommand?: undefined;
+    error?: undefined;
+    humanMessage?: undefined;
+};
+declare function nextQmdOperation(root: any, config: any, qmd: any, jobState: any): {
+    operation: string;
+    reason: string;
+    command: string;
+};
+export { qmdOperationPlan, runQmdOperation, nextQmdOperation };

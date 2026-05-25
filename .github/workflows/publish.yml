@@ -37,6 +37,7 @@ jobs:
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
+          package-manager-cache: false
 
       - name: Install dependencies
         run: |
@@ -67,6 +68,4 @@ jobs:
 
       - name: Publish to npm
         if: steps.published.outputs.skip != 'true'
-        run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public

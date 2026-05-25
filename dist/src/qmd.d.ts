@@ -1,3 +1,4 @@
+declare function runCommand(command: any, args: any, options?: any): any;
 declare function detectQmd(config: any, root?: string): {
     available: boolean;
     command: any;
@@ -76,4 +77,4 @@ declare function qmdSearch(query: any, maxResults: any, config: any, root?: stri
     method: string;
 };
 declare function installInstructions(): string;
-export { detectQmd, qmdSearch, parseQmdSearchOutput, installInstructions };
+export { detectQmd, qmdSearch, parseQmdSearchOutput, installInstructions, runCommand };

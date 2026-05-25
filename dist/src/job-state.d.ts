@@ -4,6 +4,7 @@ declare function emptyJobState(): {
     failedJobs: any[];
     recentJobs: any[];
     lastJob: any;
+    lastSetupJob: any;
     lastSearchJob: any;
     lastUpdateJob: any;
     lastEmbedJob: any;
@@ -41,6 +42,7 @@ declare function backgroundJobSummary(state: any): {
     currentJob: {
         id: any;
         type: any;
+        operation: any;
         status: any;
         startedAt: any;
         finishedAt: any;
@@ -55,6 +57,19 @@ declare function backgroundJobSummary(state: any): {
     lastJob: {
         id: any;
         type: any;
+        operation: any;
+        status: any;
+        startedAt: any;
+        finishedAt: any;
+        qmd: any;
+        result: any;
+        error: any;
+        recoveryHint: any;
+    };
+    lastSetupJob: {
+        id: any;
+        type: any;
+        operation: any;
         status: any;
         startedAt: any;
         finishedAt: any;
@@ -66,6 +81,7 @@ declare function backgroundJobSummary(state: any): {
     lastSearchJob: {
         id: any;
         type: any;
+        operation: any;
         status: any;
         startedAt: any;
         finishedAt: any;
@@ -77,6 +93,7 @@ declare function backgroundJobSummary(state: any): {
     lastUpdateJob: {
         id: any;
         type: any;
+        operation: any;
         status: any;
         startedAt: any;
         finishedAt: any;
@@ -88,6 +105,7 @@ declare function backgroundJobSummary(state: any): {
     lastEmbedJob: {
         id: any;
         type: any;
+        operation: any;
         status: any;
         startedAt: any;
         finishedAt: any;

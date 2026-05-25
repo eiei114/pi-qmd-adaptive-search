@@ -3,11 +3,13 @@ export { adaptiveSearch } from './search.js';
 export { recordFeedback, reviewSuggestions, approveSuggestions } from './feedback.js';
 export { adaptiveStatus } from './status.js';
 export { detectQmd, installInstructions } from './qmd.js';
+export { qmdOperationPlan, runQmdOperation, nextQmdOperation } from './qmd-operations.js';
 import { initProject, loadConfig, applyPreset } from './config.js';
 import { adaptiveSearch } from './search.js';
 import { recordFeedback, reviewSuggestions, approveSuggestions } from './feedback.js';
 import { adaptiveStatus } from './status.js';
 import { detectQmd, installInstructions } from './qmd.js';
+import { qmdOperationPlan, runQmdOperation, nextQmdOperation } from './qmd-operations.js';
 declare const _default: {
     initProject: typeof initProject;
     loadConfig: typeof loadConfig;
@@ -19,5 +21,8 @@ declare const _default: {
     adaptiveStatus: typeof adaptiveStatus;
     detectQmd: typeof detectQmd;
     installInstructions: typeof installInstructions;
+    qmdOperationPlan: typeof qmdOperationPlan;
+    runQmdOperation: typeof runQmdOperation;
+    nextQmdOperation: typeof nextQmdOperation;
 };
 export default _default;

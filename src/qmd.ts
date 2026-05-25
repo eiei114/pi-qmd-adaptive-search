@@ -153,4 +153,4 @@ function installInstructions() {
   ].join('\n');
 }
 
-export { detectQmd, qmdSearch, parseQmdSearchOutput, installInstructions };
+export { detectQmd, qmdSearch, parseQmdSearchOutput, installInstructions, runCommand };

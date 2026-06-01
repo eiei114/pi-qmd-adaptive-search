@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { adaptiveSearch, recordFeedback, adaptiveStatus, initProject, qmdOperationPlan, runQmdOperation } from '../src/index.js';
+import { adaptiveSearch, recordFeedback, reviewSuggestions, approveSuggestions, adaptiveStatus, initProject, qmdOperationPlan, runQmdOperation } from '../src/index.js';
 import { detectQmd, parseQmdSearchOutput } from '../src/qmd.js';
 function tempProject() {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qmd-adaptive-'));
@@ -93,6 +93,24 @@ test('feedback learns from recent result without storing raw query', () => {
     const boosts = JSON.parse(fs.readFileSync(path.join(root, '.qmd-adaptive-search', 'local', 'learned-boosts.json'), 'utf8'));
     assert.ok(boosts.boosts['docs/ProductSpec.md'] > 0);
 });
+test('forced positive feedback can be reviewed and promoted to shared learning', () => {
+    const root = tempProject();
+    initProject(root);
+    const feedback = recordFeedback({ selectedPath: 'docs/ProductSpec.md', rating: 'good', force: true, query: 'export decisions' }, { root });
+    assert.equal(feedback.ok, true);
+    assert.ok(feedback.warnings.some((warning) => warning.includes('forced feedback')));
+    const review = reviewSuggestions({ root });
+    assert.equal(review.count, 1);
+    assert.equal(review.suggestions[0].confidence, 0.25);
+    const approved = approveSuggestions({ root });
+    assert.equal(approved.ok, true);
+    assert.equal(approved.approved, 1);
+    const sharedAliases = JSON.parse(fs.readFileSync(path.join(root, '.qmd-adaptive-search', 'shared-aliases.json'), 'utf8'));
+    const sharedBoosts = JSON.parse(fs.readFileSync(path.join(root, '.qmd-adaptive-search', 'shared-boosts.json'), 'utf8'));
+    assert.ok(sharedBoosts.boosts['docs/ProductSpec.md'] > 0);
+    assert.ok(sharedAliases.aliases.export.includes('productspec'));
+    assert.equal(reviewSuggestions({ root }).count, 0);
+});
 test('privacy store excludes exact raw query and query hash', () => {
     const root = tempProject();
     const query = 'product decisions raw privacy sentinel';
@@ -137,6 +155,20 @@ test('confirmed qmd update records job state', () => {
     const jobState = JSON.parse(fs.readFileSync(path.join(root, '.qmd-adaptive-search', 'local', 'job-state.json'), 'utf8'));
     assert.equal(jobState.currentJob, null);
     assert.equal(jobState.lastUpdateJob.operation, 'update');
+});
+test('failed qmd operation records failed job and recovery hint', () => {
+    const root = tempProject();
+    const fakeQmd = path.join(root, 'failing-qmd.cjs');
+    fs.writeFileSync(fakeQmd, 'console.error("fatal embed failure"); process.exit(9);\n', 'utf8');
+    const result = runQmdOperation('embed', { yes: true, timeoutMs: 1000 }, { root, qmd: { available: true, command: [process.execPath, fakeQmd] } });
+    assert.equal(result.ok, false);
+    assert.equal(result.status, 9);
+    assert.match(result.humanMessage, /fatal embed failure/);
+    const status = adaptiveStatus({ root });
+    assert.equal(status.failedBackgroundJobs.length, 1);
+    assert.equal(status.failedBackgroundJobs[0].type, 'qmd-embed');
+    assert.match(status.failedBackgroundJobs[0].recoveryHint, /qmd embed failed/);
+    assert.equal(status.lastEmbedJob.status, 'failed');
 });
 test('search records completed qmd job state', () => {
     const root = tempProject();

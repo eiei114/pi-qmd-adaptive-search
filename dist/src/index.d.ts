@@ -4,6 +4,7 @@ export { recordFeedback, reviewSuggestions, approveSuggestions } from './feedbac
 export { adaptiveStatus } from './status.js';
 export { detectQmd, installInstructions } from './qmd.js';
 export { qmdOperationPlan, runQmdOperation, nextQmdOperation } from './qmd-operations.js';
+export { compactSearchDetails, formatAdaptiveSearchToolResult, formatCompactSearchText } from './search-result-format.js';
 import { initProject, loadConfig, applyPreset } from './config.js';
 import { adaptiveSearch } from './search.js';
 import { recordFeedback, reviewSuggestions, approveSuggestions } from './feedback.js';

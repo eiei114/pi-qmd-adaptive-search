@@ -226,19 +226,36 @@ MCP-style command names are accepted as CLI aliases:
 
 When installed as a Pi package, these are registered as Pi tools as well.
 
-Pi slash commands:
+Pi slash commands (`qmd-a:*`):
 
 | Command | Description |
 | --- | --- |
-| `/qmd-adaptive-init` | Create lightweight config files |
-| `/qmd-adaptive-status` | Show qmd/config/learning status |
-| `/qmd-adaptive-review` | Show pending suggestions |
-| `/qmd-adaptive-review approve` | Promote pending suggestions to shared aliases/boosts |
-| `/qmd-adaptive-configure <preset>` | Apply `docs`, `mixed`, `code`, or `privacy` preset |
-| `/qmd-adaptive-install-qmd` | Show qmd install guidance |
-| `/qmd-adaptive-qmd-setup` | Show qmd collection setup plan; pass `--yes` to run |
-| `/qmd-adaptive-qmd-update` | Show qmd update plan; pass `--yes` to run |
-| `/qmd-adaptive-qmd-embed` | Show qmd embed plan; pass `--yes` to run |
+| `/qmd-a:init` | Create lightweight config files |
+| `/qmd-a:status` | Show qmd/config/learning status |
+| `/qmd-a:review` | Show pending suggestions |
+| `/qmd-a:approve` | Promote pending suggestions to shared aliases/boosts |
+| `/qmd-a:configure <preset>` | Apply `docs`, `mixed`, `code`, or `privacy` preset |
+| `/qmd-a:install` | Show qmd install guidance |
+| `/qmd-a:setup` | Show qmd collection setup plan |
+| `/qmd-a:setup-run` | Run qmd collection setup |
+| `/qmd-a:update` | Show qmd update plan |
+| `/qmd-a:update-run` | Run qmd update |
+| `/qmd-a:embed` | Show qmd embed plan |
+| `/qmd-a:embed-run` | Run qmd embed |
+
+Legacy aliases (deprecated; one release compatibility):
+
+| Command | Maps to |
+| --- | --- |
+| `/qmd-adaptive-init` | `/qmd-a:init` |
+| `/qmd-adaptive-status` | `/qmd-a:status` |
+| `/qmd-adaptive-review` | `/qmd-a:review` |
+| `/qmd-adaptive-review approve` | `/qmd-a:approve` |
+| `/qmd-adaptive-configure <preset>` | `/qmd-a:configure` |
+| `/qmd-adaptive-install-qmd` | `/qmd-a:install` |
+| `/qmd-adaptive-qmd-setup` | `/qmd-a:setup`, or `/qmd-a:setup-run` when `--yes` is passed |
+| `/qmd-adaptive-qmd-update` | `/qmd-a:update`, or `/qmd-a:update-run` when `--yes` is passed |
+| `/qmd-adaptive-qmd-embed` | `/qmd-a:embed`, or `/qmd-a:embed-run` when `--yes` is passed |
 
 ## Examples
 

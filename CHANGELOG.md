@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 This project follows a pragmatic `0.x` versioning policy: APIs and config may change before `1.0.0`.
 
+## [0.3.0] - 2026-06-02
+
+### Added
+
+- Pi slash commands under the `qmd-a:*` namespace (`init`, `status`, `review`, `approve`, `configure`, `install`, `setup`, `setup-run`, `update`, `update-run`, `embed`, `embed-run`).
+- Dedicated `/qmd-a:approve` command separate from `/qmd-a:review`.
+
+### Changed
+
+- Extension command registration moved to `src/extension-commands.ts` for testability.
+
+### Deprecated
+
+- Legacy `qmd-adaptive-*` hyphen commands remain registered for one release as compatibility aliases (including `approve` on `qmd-adaptive-review` and `--yes` on `qmd-adaptive-qmd-*`).
+
 ## [0.2.1] - 2026-06-02
 
 ### Changed

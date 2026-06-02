@@ -1,14 +1,19 @@
 # pi-qmd-adaptive-search
 
 [![npm version](https://img.shields.io/npm/v/pi-qmd-adaptive-search?color=cb3837&label=npm)](https://www.npmjs.com/package/pi-qmd-adaptive-search)
-[![GitHub](https://img.shields.io/badge/GitHub-eiei114%2Fpi--qmd--adaptive--search-blue)](https://github.com/eiei114/pi-qmd-adaptive-search)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![npm downloads](https://img.shields.io/npm/dm/pi-qmd-adaptive-search)](https://www.npmjs.com/package/pi-qmd-adaptive-search)
 [![CI](https://github.com/eiei114/pi-qmd-adaptive-search/actions/workflows/ci.yml/badge.svg)](https://github.com/eiei114/pi-qmd-adaptive-search/actions/workflows/ci.yml)
+[![Publish](https://github.com/eiei114/pi-qmd-adaptive-search/actions/workflows/publish.yml/badge.svg)](https://github.com/eiei114/pi-qmd-adaptive-search/actions/workflows/publish.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-MVP%200.1.0-orange)](#versioning-policy)
 [![Pi package](https://img.shields.io/badge/pi-package-purple)](#pi-installation)
+[![Trusted Publishing](https://img.shields.io/badge/Trusted%20Publishing-GitHub%20OIDC-4c1)](#release)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Status](https://img.shields.io/badge/status-MVP%200.x-orange)](#versioning-policy)
+[![GitHub](https://img.shields.io/badge/GitHub-eiei114%2Fpi--qmd--adaptive--search-blue)](https://github.com/eiei114/pi-qmd-adaptive-search)
 
 Project-local semantic file discovery for notes, docs, specs, plans, decisions, and other project files.
+
+## What this is
 
 `pi-qmd-adaptive-search` is a Pi package and CLI. It uses [`qmd`](https://github.com/tobilu/qmd) when available, then improves results with query expansion, aliases, learned path boosts, scope hints, and filename/content fallback. It is designed for vague searches such as “where did we decide this?”, “related notes”, or “the spec about export”.
 
@@ -129,6 +134,17 @@ First run creates:
 ```
 
 `local/` and `logs/` are added to `.gitignore`. `config.json`, `shared-aliases.json`, and `shared-boosts.json` can be committed.
+
+## Usage summary
+
+- `qmd-adaptive-search init`: bootstrap lightweight config files.
+- `qmd-adaptive-search search "<query>"`: run a search (add `--mode` or `--scope` to guide results).
+- `qmd-adaptive-search feedback --selected <path> --rating good`: record useful results locally.
+- `qmd-adaptive-search review --approve`: promote safe shared aliases/boosts.
+- `qmd-adaptive-search status`: inspect qmd availability and recent job state.
+- Use `qmd-adaptive` as a short alias for `qmd-adaptive-search search`.
+
+For the full command list, see [CLI](#cli).
 
 ## Runtime behavior
 
@@ -514,6 +530,16 @@ Not persisted:
 - answer text
 - file contents
 
+## Package contents
+
+The npm package ships:
+
+- `bin/qmd-adaptive-search.js` (CLI entrypoint)
+- `dist/src/` (compiled library)
+- `extensions/` (Pi extension entrypoint)
+- `src/` (TypeScript source for reference)
+- `README.md`, `CHANGELOG.md`, `LICENSE`
+
 ## Repository layout
 
 ```text
@@ -551,10 +577,14 @@ node bin/qmd-adaptive-search.js search "product decisions" --max 3
 Publishing to npm is automated by GitHub Actions. To publish a new version:
 
 1. Update `version` in `package.json` and document user-visible changes in `CHANGELOG.md`.
-2. Commit and tag the release, for example `v0.1.1`, or create a GitHub Release for that tag.
-3. The `Publish to npm` workflow runs `npm run check`, skips if that exact version already exists on npm, and runs `npm publish --access public --provenance`.
+2. Commit and tag the release, for example `v0.2.1`, or create a GitHub Release for that tag.
+3. The `Publish to npm` workflow runs `npm run check`, skips if that exact version already exists on npm, and runs `npm publish --access public`.
 
-The workflow supports npm trusted publishing via GitHub OIDC. If trusted publishing is not configured on npm, add an `NPM_TOKEN` repository secret.
+The workflow supports npm trusted publishing via GitHub OIDC (see the Trusted Publishing badge). If trusted publishing is not configured on npm, add an `NPM_TOKEN` repository secret.
+
+## Security
+
+Please report vulnerabilities via [SECURITY.md](SECURITY.md). Avoid filing sensitive issues in public trackers.
 
 ## Versioning policy
 
@@ -574,6 +604,14 @@ The workflow supports npm trusted publishing via GitHub OIDC. If trusted publish
 - Stronger language-aware query expansion.
 - File-type metadata extraction for headings, frontmatter, comments, package names.
 - MCP server wrapper for tool-native usage.
+
+## Links
+
+- npm: https://www.npmjs.com/package/pi-qmd-adaptive-search
+- GitHub: https://github.com/eiei114/pi-qmd-adaptive-search
+- Issues: https://github.com/eiei114/pi-qmd-adaptive-search/issues
+- Changelog: [CHANGELOG.md](CHANGELOG.md)
+- Security: [SECURITY.md](SECURITY.md)
 
 ## License
 

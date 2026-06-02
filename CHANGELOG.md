@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 This project follows a pragmatic `0.x` versioning policy: APIs and config may change before `1.0.0`.
 
+## [0.3.1] - 2026-06-02
+
+### Fixed
+
+- Added an explicit auto-release to publish workflow handoff so npm publishing runs after a version bump is merged to `main`.
+- Bumped package metadata to publish a fresh npm version after the previously tagged `0.3.0` release did not reach npm.
+
 ## [0.3.0] - 2026-06-02
 
 ### Added

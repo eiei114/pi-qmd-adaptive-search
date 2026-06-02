@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project follows a pragmatic `0.x` versioning policy: APIs and config may change before `1.0.0`.
 
+## [0.2.1] - 2026-06-02
+
+### Changed
+- Refresh README badges and sections to match the minimal docs policy.
+- Document usage summary, package contents, security, and links.
+
 ## [0.2.0] - 2026-05-26
 
 ### Added

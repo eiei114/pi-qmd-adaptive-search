@@ -44,6 +44,7 @@ function formatSource(source: string[] = []): string {
   return source.length ? source.join(', ') : 'fallback';
 }
 
+/** Summarize adaptive search hits into structured counts, paths, warnings, and per-result metadata. */
 export function compactSearchDetails(value: AdaptiveSearchResult): CompactSearchDetails {
   const results = (value.results || []).map((result) => ({
     path: result.path,
@@ -61,6 +62,7 @@ export function compactSearchDetails(value: AdaptiveSearchResult): CompactSearch
   };
 }
 
+/** Render adaptive search results as a compact, path-first plain-text summary for tool output. */
 export function formatCompactSearchText(value: AdaptiveSearchResult): string {
   const results = value.results || [];
   const lines = [`qmd_adaptive_search: ${results.length} result(s)`];
@@ -88,6 +90,7 @@ export function formatCompactSearchText(value: AdaptiveSearchResult): string {
   return lines.join('\n');
 }
 
+/** Build the Pi tool result payload with compact text content and structured search details. */
 export function formatAdaptiveSearchToolResult(value: AdaptiveSearchResult) {
   return {
     content: [{ type: 'text', text: formatCompactSearchText(value) }],

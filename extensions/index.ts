@@ -1,5 +1,5 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
-import { registerQmdAdaptiveCommands, registerQmdAdaptiveTools } from '../dist/src/extension-commands.js';
+import { registerQmdAdaptiveCommands, registerQmdAdaptiveTools } from '../src/extension-commands.js';
 
 export default function qmdAdaptiveSearchExtension(pi: ExtensionAPI) {
   registerQmdAdaptiveTools(pi);

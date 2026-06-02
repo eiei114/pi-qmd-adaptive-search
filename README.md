@@ -253,9 +253,9 @@ Legacy aliases (deprecated; one release compatibility):
 | `/qmd-adaptive-review approve` | `/qmd-a:approve` |
 | `/qmd-adaptive-configure <preset>` | `/qmd-a:configure` |
 | `/qmd-adaptive-install-qmd` | `/qmd-a:install` |
-| `/qmd-adaptive-qmd-setup` | `/qmd-a:setup` (pass `--yes` to run) |
-| `/qmd-adaptive-qmd-update` | `/qmd-a:update` (pass `--yes` to run) |
-| `/qmd-adaptive-qmd-embed` | `/qmd-a:embed` (pass `--yes` to run) |
+| `/qmd-adaptive-qmd-setup` | `/qmd-a:setup`, or `/qmd-a:setup-run` when `--yes` is passed |
+| `/qmd-adaptive-qmd-update` | `/qmd-a:update`, or `/qmd-a:update-run` when `--yes` is passed |
+| `/qmd-adaptive-qmd-embed` | `/qmd-a:embed`, or `/qmd-a:embed-run` when `--yes` is passed |
 
 ## Examples
 

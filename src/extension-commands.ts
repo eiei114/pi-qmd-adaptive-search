@@ -67,9 +67,40 @@ function hasYesFlag(text: string): boolean {
   return /(^|\s)--yes(\s|$)/.test(String(text || ''));
 }
 
+const SEARCH_MODES = ['auto', 'precision', 'recall', 'article', 'project'] as const;
+const FEEDBACK_RATINGS = ['good', 'bad'] as const;
+
+function normalizeSearchToolParams(params: {
+  query: string;
+  mode?: (typeof SEARCH_MODES)[number];
+  scopeHint?: string | string[];
+  maxResults?: number;
+}) {
+  return {
+    ...params,
+    ...(params.mode != null ? { mode: params.mode } : {}),
+    ...(params.maxResults != null
+      ? { maxResults: Math.min(Math.max(Math.trunc(params.maxResults), 1), 30) }
+      : {})
+  };
+}
+
+function normalizeFeedbackToolParams(params: {
+  selectedPaths?: string[];
+  selectedPath?: string;
+  rating?: (typeof FEEDBACK_RATINGS)[number];
+  force?: boolean;
+}) {
+  return {
+    ...params,
+    ...(params.rating != null ? { rating: params.rating } : {})
+  };
+}
+
 function handleInit(ctx: ExtensionCommandContext) {
+  const result = initProject(ctx.cwd);
   ctx.ui.notify('qmd adaptive config initialized', 'info');
-  return jsonResult(initProject(ctx.cwd));
+  return jsonResult(result);
 }
 
 function handleStatus(ctx: ExtensionCommandContext) {
@@ -120,16 +151,23 @@ export function registerQmdAdaptiveTools(pi: ExtensionAPILike) {
     ],
     parameters: Type.Object({
       query: Type.String({ description: 'Natural language search query. Raw query is not persisted.' }),
-      mode: Type.Optional(Type.String({ description: 'auto, precision, recall, article, or project.' })),
+      mode: Type.Optional(
+        Type.Union(
+          SEARCH_MODES.map((mode) => Type.Literal(mode)),
+          { description: 'auto, precision, recall, article, or project.' }
+        )
+      ),
       scopeHint: Type.Optional(
         Type.Union([Type.String(), Type.Array(Type.String())], {
           description: 'Path/folder hints for soft boosting.'
         })
       ),
-      maxResults: Type.Optional(Type.Number({ description: 'Default 10, hard max 30.' }))
+      maxResults: Type.Optional(
+        Type.Integer({ minimum: 1, maximum: 30, description: 'Default 10, hard max 30.' })
+      )
     }),
     async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
-      return jsonResult(adaptiveSearch(params, { root: ctx.cwd }));
+      return jsonResult(adaptiveSearch(normalizeSearchToolParams(params), { root: ctx.cwd }));
     }
   });
 
@@ -140,13 +178,18 @@ export function registerQmdAdaptiveTools(pi: ExtensionAPILike) {
     parameters: Type.Object({
       selectedPaths: Type.Optional(Type.Array(Type.String())),
       selectedPath: Type.Optional(Type.String()),
-      rating: Type.Optional(Type.String({ description: 'good or bad. Automatic useful-result feedback should use good.' })),
+      rating: Type.Optional(
+        Type.Union(
+          FEEDBACK_RATINGS.map((rating) => Type.Literal(rating)),
+          { description: 'good or bad. Automatic useful-result feedback should use good.' }
+        )
+      ),
       force: Type.Optional(
         Type.Boolean({ description: 'Accept manual low-confidence feedback outside recent search results.' })
       )
     }),
     async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
-      return jsonResult(recordFeedback(params, { root: ctx.cwd }));
+      return jsonResult(recordFeedback(normalizeFeedbackToolParams(params), { root: ctx.cwd }));
     }
   });
 

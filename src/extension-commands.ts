@@ -11,6 +11,7 @@ import {
   qmdOperationPlan,
   runQmdOperation
 } from './index.js';
+import { formatAdaptiveSearchToolResult } from './search-result-format.js';
 
 export interface ExtensionCommandContext {
   cwd: string;
@@ -167,7 +168,9 @@ export function registerQmdAdaptiveTools(pi: ExtensionAPILike) {
       )
     }),
     async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
-      return jsonResult(adaptiveSearch(normalizeSearchToolParams(params), { root: ctx.cwd }));
+      return formatAdaptiveSearchToolResult(
+        adaptiveSearch(normalizeSearchToolParams(params), { root: ctx.cwd })
+      );
     }
   });
 

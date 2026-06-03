@@ -243,20 +243,6 @@ Pi slash commands (`qmd-a:*`):
 | `/qmd-a:embed` | Show qmd embed plan |
 | `/qmd-a:embed-run` | Run qmd embed |
 
-Legacy aliases (deprecated; one release compatibility):
-
-| Command | Maps to |
-| --- | --- |
-| `/qmd-adaptive-init` | `/qmd-a:init` |
-| `/qmd-adaptive-status` | `/qmd-a:status` |
-| `/qmd-adaptive-review` | `/qmd-a:review` |
-| `/qmd-adaptive-review approve` | `/qmd-a:approve` |
-| `/qmd-adaptive-configure <preset>` | `/qmd-a:configure` |
-| `/qmd-adaptive-install-qmd` | `/qmd-a:install` |
-| `/qmd-adaptive-qmd-setup` | `/qmd-a:setup`, or `/qmd-a:setup-run` when `--yes` is passed |
-| `/qmd-adaptive-qmd-update` | `/qmd-a:update`, or `/qmd-a:update-run` when `--yes` is passed |
-| `/qmd-adaptive-qmd-embed` | `/qmd-a:embed`, or `/qmd-a:embed-run` when `--yes` is passed |
-
 ## Examples
 
 Search project docs:

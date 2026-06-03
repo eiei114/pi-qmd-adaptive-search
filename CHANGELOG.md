@@ -2,7 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
-This project follows a pragmatic `0.x` versioning policy: APIs and config may change before `1.0.0`.
+## [1.0.0] - 2026-06-04
+
+### Breaking Changes
+
+Removed deprecated Pi slash commands that were kept for one release after `0.3.0`. Use the `qmd-a:*` colon commands instead:
+
+| Removed | Use instead |
+| --- | --- |
+| `/qmd-adaptive-init` | `/qmd-a:init` |
+| `/qmd-adaptive-status` | `/qmd-a:status` |
+| `/qmd-adaptive-review` | `/qmd-a:review` |
+| `/qmd-adaptive-review approve` | `/qmd-a:approve` |
+| `/qmd-adaptive-configure <preset>` | `/qmd-a:configure` |
+| `/qmd-adaptive-install-qmd` | `/qmd-a:install` |
+| `/qmd-adaptive-qmd-setup` | `/qmd-a:setup` |
+| `/qmd-adaptive-qmd-setup --yes` | `/qmd-a:setup-run` |
+| `/qmd-adaptive-qmd-update` | `/qmd-a:update` |
+| `/qmd-adaptive-qmd-update --yes` | `/qmd-a:update-run` |
+| `/qmd-adaptive-qmd-embed` | `/qmd-a:embed` |
+| `/qmd-adaptive-qmd-embed --yes` | `/qmd-a:embed-run` |
+
+CLI subcommands (`qmd-adaptive-search init`, `review --approve`, etc.) and the `.qmd-adaptive-search/` config directory are unchanged.
 
 ## [0.3.2] - 2026-06-03
 

@@ -6,7 +6,6 @@ import path from 'node:path';
 import { initProject } from '../src/index.js';
 import {
   QMD_A_COLON_COMMANDS,
-  QMD_A_LEGACY_COMMANDS,
   registerQmdAdaptiveCommands,
   registerQmdAdaptiveTools,
   type ExtensionAPILike,
@@ -44,26 +43,6 @@ test('registerQmdAdaptiveCommands registers all qmd-a colon commands', () => {
   assert.equal(commands.has('qmd:init'), false, 'must not register broad /qmd:* namespace');
 });
 
-test('registerQmdAdaptiveCommands registers legacy hyphen aliases', () => {
-  const { pi, commands } = createMockPi();
-  registerQmdAdaptiveCommands(pi);
-  for (const name of QMD_A_LEGACY_COMMANDS) {
-    assert.equal(commands.has(name), true, `missing legacy command ${name}`);
-  }
-});
-
-test('legacy qmd-adaptive-review approve dispatches to approve handler', async () => {
-  const { pi, commands } = createMockPi();
-  registerQmdAdaptiveCommands(pi);
-  const root = tempProjectRoot();
-  const review = commands.get('qmd-adaptive-review');
-  assert.ok(review);
-  const result = await review.handler('approve', { cwd: root, ui: { notify: () => {} } });
-  const payload = JSON.parse(String((result as { content: { text: string }[] }).content[0].text));
-  assert.equal(payload.ok, true);
-  assert.equal(payload.approved, 0);
-});
-
 test('colon qmd-a:approve dispatches without legacy approve subcommand', async () => {
   const { pi, commands } = createMockPi();
   registerQmdAdaptiveCommands(pi);
@@ -75,25 +54,21 @@ test('colon qmd-a:approve dispatches without legacy approve subcommand', async (
   assert.equal(payload.ok, true);
 });
 
-test('legacy qmd-adaptive-qmd-setup --yes runs operation; colon setup-run matches', async () => {
+test('qmd-a:setup-run runs operation; qmd-a:setup returns plan only', async () => {
   const { pi, commands } = createMockPi();
   registerQmdAdaptiveCommands(pi);
   const root = tempProjectRoot();
   const ctx = { cwd: root, ui: { notify: () => {} } };
 
-  const legacy = commands.get('qmd-adaptive-qmd-setup');
   const colonRun = commands.get('qmd-a:setup-run');
   const colonPlan = commands.get('qmd-a:setup');
-  assert.ok(legacy && colonRun && colonPlan);
+  assert.ok(colonRun && colonPlan);
 
-  const rootLegacy = tempProjectRoot();
   const rootColonRun = tempProjectRoot();
   const notify = () => {};
-  const legacyResult = await legacy.handler('--yes', { cwd: rootLegacy, ui: { notify } });
   const colonRunResult = await colonRun.handler('', { cwd: rootColonRun, ui: { notify } });
   const colonPlanResult = await colonPlan.handler('', ctx);
 
-  const legacyPayload = JSON.parse(String((legacyResult as { content: { text: string }[] }).content[0].text));
   const colonRunPayload = JSON.parse(String((colonRunResult as { content: { text: string }[] }).content[0].text));
   const colonPlanPayload = JSON.parse(String((colonPlanResult as { content: { text: string }[] }).content[0].text));
 
@@ -101,10 +76,7 @@ test('legacy qmd-adaptive-qmd-setup --yes runs operation; colon setup-run matche
   assert.equal(colonPlanPayload.ok, undefined);
   assert.equal('status' in colonPlanPayload, false);
 
-  assert.equal(typeof legacyPayload.ok, 'boolean');
   assert.equal(typeof colonRunPayload.ok, 'boolean');
-  assert.equal(legacyPayload.ok, colonRunPayload.ok);
-  assert.equal(legacyPayload.plan?.operation, 'setup');
   assert.equal(colonRunPayload.plan?.operation, 'setup');
 });
 

@@ -164,14 +164,24 @@ function uniqueJobs(jobs) {
   return out;
 }
 
-function backgroundJobsForResult(state) {
+function backgroundJobStatusSummary(state) {
   const normalized = normalizeJobState(state);
-  return uniqueJobs([
-    normalized.currentJob,
-    ...(normalized.pendingJobs || []),
-    normalized.lastJob,
-    ...(normalized.failedJobs || [])
-  ]);
+  const pendingJobs = normalized.pendingJobs || [];
+  const currentJob = normalized.currentJob;
+  const running = currentJob?.status === 'running';
+  const pendingCount = pendingJobs.length + (running ? 1 : 0);
+  const failedCount = (normalized.failedJobs || []).length;
+  const lastSearch = normalized.lastSearchJob;
+  const lastSearchStatus = lastSearch?.status || null;
+
+  return {
+    pendingCount,
+    failedCount,
+    running,
+    lastSearchStatus,
+    qmdFallbackUsed: lastSearch?.result?.usedFallback === true,
+    qmdAvailable: lastSearch?.qmd?.available ?? null
+  };
 }
 
 function backgroundJobSummary(state) {
@@ -208,6 +218,6 @@ export {
   finishBackgroundJob,
   startQmdSearchJob,
   finishQmdSearchJob,
-  backgroundJobsForResult,
+  backgroundJobStatusSummary,
   backgroundJobSummary
 };

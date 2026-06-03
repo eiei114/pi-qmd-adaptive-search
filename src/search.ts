@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { initProject, loadConfig, paths } from './config.js';
 import { qmdSearch, installInstructions } from './qmd.js';
 import { readJson, writeJson, toPosix } from './fs-utils.js';
-import { backgroundJobsForResult, finishQmdSearchJob, readJobState, startQmdSearchJob } from './job-state.js';
+import { backgroundJobStatusSummary, finishQmdSearchJob, readJobState, startQmdSearchJob } from './job-state.js';
 
 const TEXT_EXTS = new Set(['.md', '.txt', '.ts', '.tsx', '.js', '.py', '.json', '.yaml', '.yml']);
 
@@ -214,8 +214,8 @@ function adaptiveSearch(input, options: any = {}) {
     }));
 
   rememberSearch(root, config, { mode, resultPaths: results.map((r) => r.path), anchors: queryTerms });
-  const backgroundJobs = backgroundJobsForResult(readJobState(root));
-  return { results, warnings, backgroundJobs };
+  const backgroundJobStatus = backgroundJobStatusSummary(readJobState(root));
+  return { results, warnings, backgroundJobStatus };
 }
 
 export { adaptiveSearch, inferMode, tokenize, walkFiles, globToRegex };

@@ -13,6 +13,13 @@ declare function adaptiveSearch(input: any, options?: any): {
         highlights: any[];
     }[];
     warnings: any[];
-    backgroundJobs: any[];
+    backgroundJobStatus: {
+        pendingCount: any;
+        failedCount: any;
+        running: boolean;
+        lastSearchStatus: any;
+        qmdFallbackUsed: boolean;
+        qmdAvailable: any;
+    };
 };
 export { adaptiveSearch, inferMode, tokenize, walkFiles, globToRegex };

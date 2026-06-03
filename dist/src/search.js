@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { initProject, loadConfig, paths } from './config.js';
 import { qmdSearch, installInstructions } from './qmd.js';
 import { readJson, writeJson, toPosix } from './fs-utils.js';
-import { backgroundJobsForResult, finishQmdSearchJob, readJobState, startQmdSearchJob } from './job-state.js';
+import { backgroundJobStatusSummary, finishQmdSearchJob, readJobState, startQmdSearchJob } from './job-state.js';
 const TEXT_EXTS = new Set(['.md', '.txt', '.ts', '.tsx', '.js', '.py', '.json', '.yaml', '.yml']);
 function tokenize(value) {
     return Array.from(new Set(String(value || '').toLowerCase().split(/[\s\p{P}\p{S}]+/u).filter((t) => t.length >= 2).slice(0, 12)));
@@ -242,8 +242,8 @@ function adaptiveSearch(input, options = {}) {
         highlights: highlights(root, r.path, terms, config.search.maxHighlightsPerResult || 2, config.search.maxHighlightChars || 240)
     }));
     rememberSearch(root, config, { mode, resultPaths: results.map((r) => r.path), anchors: queryTerms });
-    const backgroundJobs = backgroundJobsForResult(readJobState(root));
-    return { results, warnings, backgroundJobs };
+    const backgroundJobStatus = backgroundJobStatusSummary(readJobState(root));
+    return { results, warnings, backgroundJobStatus };
 }
 export { adaptiveSearch, inferMode, tokenize, walkFiles, globToRegex };
 //# sourceMappingURL=search.js.map

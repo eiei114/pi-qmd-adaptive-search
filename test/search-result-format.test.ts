@@ -28,7 +28,14 @@ const sampleResult = {
     }
   ],
   warnings: ['qmd was not found; using fallback search only.'],
-  backgroundJobs: [{ id: 'job-1', status: 'skipped' }]
+  backgroundJobStatus: {
+    pendingCount: 0,
+    failedCount: 0,
+    running: false,
+    lastSearchStatus: 'skipped',
+    qmdFallbackUsed: true,
+    qmdAvailable: false
+  }
 };
 
 test('formatCompactSearchText is path-first and excludes snippets', () => {
@@ -55,6 +62,7 @@ test('compactSearchDetails keeps result paths without snippet duplication', () =
   assert.equal(Object.hasOwn(details.results[0], 'lead'), false);
   assert.equal(Object.hasOwn(details.results[0], 'highlights'), false);
   assert.equal(Object.hasOwn(details, 'backgroundJobs'), false);
+  assert.deepEqual(details.backgroundJobStatus, sampleResult.backgroundJobStatus);
 });
 
 test('formatAdaptiveSearchToolResult returns compact text and lightweight details', () => {
@@ -72,4 +80,18 @@ test('formatCompactSearchText handles empty results', () => {
 
   assert.match(text, /0 result\(s\)/);
   assert.match(text, /No matching files found\./);
+});
+
+test('formatCompactSearchText summarizes non-trivial background job status', () => {
+  const text = formatCompactSearchText(sampleResult);
+
+  assert.match(text, /Background jobs: qmd fallback used/);
+  assert.match(text, /qmd_adaptive_status for details/);
+});
+
+test('formatAdaptiveSearchToolResult excludes verbose background job arrays from details', () => {
+  const toolResult = formatAdaptiveSearchToolResult(sampleResult);
+
+  assert.equal(Object.hasOwn(toolResult.details, 'backgroundJobs'), false);
+  assert.equal(toolResult.details.backgroundJobStatus?.lastSearchStatus, 'skipped');
 });

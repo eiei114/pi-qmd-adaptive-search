@@ -195,7 +195,7 @@ qmd-adaptive-search qmd embed --yes
 
 The current MVP does not start long-running collection setup, collection update, embedding, watcher, idle, process, or subagent jobs. It does record each synchronous qmd search/query attempt in `.qmd-adaptive-search/local/job-state.json`, including the last job, pending/running jobs, failures, qmd command metadata, result counts, and recovery hints.
 
-`qmd-adaptive-search search ...` returns `backgroundJobs` with the latest operation state. `qmd-adaptive-search status` expands this into `backgroundJobs`, `pendingBackgroundJobs`, `failedBackgroundJobs`, `lastBackgroundJob`, `lastSearchJob`, and `recoveryHints`.
+`qmd-adaptive-search search ...` returns a compact `backgroundJobStatus` summary (pending/failed counts, last search status, qmd fallback). `qmd-adaptive-search status` expands job state into full `backgroundJobs`, `pendingBackgroundJobs`, `failedBackgroundJobs`, `lastBackgroundJob`, `lastSearchJob`, and `recoveryHints`.
 
 Treat the `indexing`, `idle`, and `changeDetection` config fields as forward-compatible settings for future orchestration. Use the explicit `qmd-adaptive-search qmd setup|update|embed --dry-run` plan commands before running qmd maintenance.
 
@@ -502,7 +502,14 @@ Search returns JSON:
     }
   ],
   "warnings": [],
-  "backgroundJobs": []
+  "backgroundJobStatus": {
+    "pendingCount": 0,
+    "failedCount": 0,
+    "running": false,
+    "lastSearchStatus": null,
+    "qmdFallbackUsed": false,
+    "qmdAvailable": null
+  }
 }
 ```
 

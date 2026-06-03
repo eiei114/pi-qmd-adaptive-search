@@ -182,12 +182,14 @@ if (command === 'search') {
 process.exit(1);
 `);
     const result = adaptiveSearch({ query: 'product decisions', maxResults: 5 }, { root });
-    assert.equal(result.backgroundJobs[0].status, 'completed');
-    assert.equal(result.backgroundJobs[0].result.resultCount, 1);
+    assert.equal(result.backgroundJobStatus.lastSearchStatus, 'completed');
+    assert.equal(result.backgroundJobStatus.qmdFallbackUsed, false);
+    assert.equal(Object.hasOwn(result, 'backgroundJobs'), false);
     const status = adaptiveStatus({ root });
     assert.equal(status.backgroundJobs.pending.length, 0);
     assert.equal(status.backgroundJobs.lastSearchJob.status, 'completed');
     assert.equal(status.lastSearchJob.result.resultCount, 1);
+    assert.equal(status.lastSearchJob.id, status.backgroundJobs.lastSearchJob.id);
 });
 test('search records failed qmd job state with recovery hint', () => {
     const root = tempProject();
@@ -201,11 +203,14 @@ if (command === 'search') {
 process.exit(1);
 `);
     const result = adaptiveSearch({ query: 'product decisions', maxResults: 5 }, { root });
-    assert.equal(result.backgroundJobs[0].status, 'failed');
-    assert.match(result.backgroundJobs[0].error, /index unavailable/);
+    assert.equal(result.backgroundJobStatus.lastSearchStatus, 'failed');
+    assert.equal(result.backgroundJobStatus.qmdFallbackUsed, true);
+    assert.equal(result.backgroundJobStatus.failedCount, 1);
+    assert.equal(Object.hasOwn(result, 'backgroundJobs'), false);
     const status = adaptiveStatus({ root });
     assert.equal(status.failedBackgroundJobs.length, 1);
     assert.equal(status.failedBackgroundJobs[0].status, 'failed');
+    assert.match(status.failedBackgroundJobs[0].error, /index unavailable/);
     assert.ok(status.recoveryHints[0].hint.includes('qmd status'));
 });
 test('qmd URI paths resolve to local paths with underscores and spaces', () => {

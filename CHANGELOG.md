@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 This project follows a pragmatic `0.x` versioning policy: APIs and config may change before `1.0.0`.
 
+## [0.3.2] - 2026-06-03
+
+### Changed
+
+- `qmd_adaptive_search` Pi tool now returns compact, path-first text by default instead of a pretty-printed JSON dump of the full search payload.
+- Tool `details` keeps lightweight `resultPaths` and per-result metadata for `qmd_search_feedback` without duplicating snippets or highlights.
+
 ## [0.3.1] - 2026-06-02
 
 ### Fixed

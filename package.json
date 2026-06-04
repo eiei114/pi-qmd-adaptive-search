@@ -42,7 +42,8 @@
     "test": "npm run build && node --test dist/test/*.test.js",
     "smoke": "npm run build && node bin/qmd-adaptive-search.js --help",
     "check": "npm test && npm run smoke && npm pack --dry-run",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "version:check": "node scripts/check-version-bump.mjs"
   },
   "engines": {
     "node": ">=20"

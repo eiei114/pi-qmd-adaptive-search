@@ -92,7 +92,10 @@ test('qmd_adaptive_search tool returns compact text and lightweight details', as
   const result = await searchTool.execute('tool-call-1', { query: 'product decisions', maxResults: 5 }, null, null, {
     cwd: root
   });
-  const payload = result as { content: { type: string; text: string }[]; details: { resultPaths: string[]; results: unknown[] } };
+  const payload = result as {
+    content: { type: string; text: string }[];
+    details: { resultPaths: string[]; results: unknown[]; backgroundJobStatus?: { lastSearchStatus: string | null } };
+  };
 
   assert.equal(payload.content.length, 1);
   assert.match(payload.content[0].text, /qmd_adaptive_search: \d+ result\(s\)/);
@@ -101,4 +104,6 @@ test('qmd_adaptive_search tool returns compact text and lightweight details', as
   assert.ok(payload.details.resultPaths.length > 0);
   assert.ok(Array.isArray(payload.details.results));
   assert.equal(Object.hasOwn((payload.details.results[0] || {}) as object, 'lead'), false);
+  assert.equal(Object.hasOwn(payload.details, 'backgroundJobs'), false);
+  assert.equal(typeof payload.details.backgroundJobStatus?.lastSearchStatus, 'string');
 });

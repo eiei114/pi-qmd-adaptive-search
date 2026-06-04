@@ -37,7 +37,14 @@ declare function startQmdSearchJob(root: any, input?: any): {
     recoveryHint: string;
 };
 declare function finishQmdSearchJob(root: any, runningJob: any, qmdResult?: any): any;
-declare function backgroundJobsForResult(state: any): any[];
+declare function backgroundJobStatusSummary(state: any): {
+    pendingCount: any;
+    failedCount: any;
+    running: boolean;
+    lastSearchStatus: any;
+    qmdFallbackUsed: boolean;
+    qmdAvailable: any;
+};
 declare function backgroundJobSummary(state: any): {
     currentJob: {
         id: any;
@@ -121,4 +128,4 @@ declare function backgroundJobSummary(state: any): {
         hint: any;
     }[];
 };
-export { emptyJobState, normalizeJobState, readJobState, writeJobState, startBackgroundJob, finishBackgroundJob, startQmdSearchJob, finishQmdSearchJob, backgroundJobsForResult, backgroundJobSummary };
+export { emptyJobState, normalizeJobState, readJobState, writeJobState, startBackgroundJob, finishBackgroundJob, startQmdSearchJob, finishQmdSearchJob, backgroundJobStatusSummary, backgroundJobSummary };

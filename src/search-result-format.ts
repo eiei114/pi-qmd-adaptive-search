@@ -8,10 +8,19 @@ export interface AdaptiveSearchResultItem {
   highlights?: string[];
 }
 
+export interface BackgroundJobStatusSummary {
+  pendingCount: number;
+  failedCount: number;
+  running: boolean;
+  lastSearchStatus: string | null;
+  qmdFallbackUsed: boolean;
+  qmdAvailable: boolean | null;
+}
+
 export interface AdaptiveSearchResult {
   results: AdaptiveSearchResultItem[];
   warnings?: string[];
-  backgroundJobs?: unknown[];
+  backgroundJobStatus?: BackgroundJobStatusSummary;
 }
 
 export interface CompactSearchResultItem {
@@ -27,6 +36,7 @@ export interface CompactSearchDetails {
   resultPaths: string[];
   warnings: string[];
   results: CompactSearchResultItem[];
+  backgroundJobStatus?: BackgroundJobStatusSummary;
 }
 
 function normalizeWhy(why: ReadonlyArray<string | unknown> = []): string[] {
@@ -54,12 +64,16 @@ export function compactSearchDetails(value: AdaptiveSearchResult): CompactSearch
     why: normalizeWhy(result.why)
   }));
 
-  return {
+  const details: CompactSearchDetails = {
     resultCount: results.length,
     resultPaths: results.map((result) => result.path),
     warnings: value.warnings || [],
     results
   };
+  if (value.backgroundJobStatus) {
+    details.backgroundJobStatus = value.backgroundJobStatus;
+  }
+  return details;
 }
 
 /** Render adaptive search results as a compact, path-first plain-text summary for tool output. */
@@ -85,6 +99,15 @@ export function formatCompactSearchText(value: AdaptiveSearchResult): string {
     for (const warning of warnings) {
       lines.push(`- ${String(warning).replace(/\s+/g, ' ').trim()}`);
     }
+  }
+
+  const jobStatus = value.backgroundJobStatus;
+  if (jobStatus && (jobStatus.failedCount > 0 || jobStatus.pendingCount > 0 || jobStatus.qmdFallbackUsed)) {
+    const parts = [];
+    if (jobStatus.qmdFallbackUsed) parts.push('qmd fallback used');
+    if (jobStatus.pendingCount > 0) parts.push(`${jobStatus.pendingCount} pending`);
+    if (jobStatus.failedCount > 0) parts.push(`${jobStatus.failedCount} failed`);
+    lines.push('', `Background jobs: ${parts.join(', ')} (use qmd_adaptive_status for details).`);
   }
 
   return lines.join('\n');

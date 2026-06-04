@@ -45,17 +45,6 @@ export const QMD_A_COLON_COMMANDS = [
   'qmd-a:embed-run'
 ] as const;
 
-export const QMD_A_LEGACY_COMMANDS = [
-  'qmd-adaptive-init',
-  'qmd-adaptive-status',
-  'qmd-adaptive-review',
-  'qmd-adaptive-configure',
-  'qmd-adaptive-install-qmd',
-  'qmd-adaptive-qmd-setup',
-  'qmd-adaptive-qmd-update',
-  'qmd-adaptive-qmd-embed'
-] as const;
-
 function textResult(text: string, details: Record<string, unknown> = {}) {
   return { content: [{ type: 'text', text }], details };
 }
@@ -264,41 +253,4 @@ export function registerQmdAdaptiveCommands(pi: ExtensionAPILike) {
     pi.registerCommand(name, colonHandlers[name]);
   }
 
-  pi.registerCommand('qmd-adaptive-init', {
-    description: 'Legacy alias for /qmd-a:init (deprecated; use /qmd-a:init)',
-    handler: async (_args, ctx) => handleInit(ctx)
-  });
-
-  pi.registerCommand('qmd-adaptive-status', {
-    description: 'Legacy alias for /qmd-a:status (deprecated; use /qmd-a:status)',
-    handler: async (_args, ctx) => handleStatus(ctx)
-  });
-
-  pi.registerCommand('qmd-adaptive-review', {
-    description:
-      'Legacy alias for /qmd-a:review or /qmd-a:approve; pass "approve" to promote suggestions',
-    handler: async (args, ctx) => {
-      if (String(args || '').trim() === 'approve') return handleApprove(ctx);
-      return handleReview(ctx);
-    }
-  });
-
-  pi.registerCommand('qmd-adaptive-configure', {
-    description:
-      'Legacy alias for /qmd-a:configure; pass preset name (docs, mixed, code, privacy)',
-    handler: async (args, ctx) => handleConfigure(args, ctx)
-  });
-
-  pi.registerCommand('qmd-adaptive-install-qmd', {
-    description: 'Legacy alias for /qmd-a:install (deprecated; use /qmd-a:install)',
-    handler: async () => handleInstall()
-  });
-
-  for (const operation of ['setup', 'update', 'embed'] as const) {
-    pi.registerCommand(`qmd-adaptive-qmd-${operation}`, {
-      description: `Legacy alias for /qmd-a:${operation} or /qmd-a:${operation}-run; pass --yes to run`,
-      handler: async (args, ctx) =>
-        handleQmdOperation(operation, String(args || ''), ctx, { execute: hasYesFlag(String(args || '')) })
-    });
-  }
 }

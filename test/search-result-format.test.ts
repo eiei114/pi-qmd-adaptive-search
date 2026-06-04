@@ -89,6 +89,40 @@ test('formatCompactSearchText summarizes non-trivial background job status', () 
   assert.match(text, /qmd_adaptive_status for details/);
 });
 
+test('formatCompactSearchText does not show background jobs for pending count only', () => {
+  const text = formatCompactSearchText({
+    results: [],
+    warnings: [],
+    backgroundJobStatus: {
+      pendingCount: 2,
+      failedCount: 0,
+      running: true,
+      lastSearchStatus: null,
+      qmdFallbackUsed: false,
+      qmdAvailable: null
+    }
+  });
+
+  assert.doesNotMatch(text, /Background jobs:/);
+});
+
+test('formatCompactSearchText includes pending count when failure or fallback status is shown', () => {
+  const text = formatCompactSearchText({
+    results: [],
+    warnings: [],
+    backgroundJobStatus: {
+      pendingCount: 2,
+      failedCount: 1,
+      running: true,
+      lastSearchStatus: 'failed',
+      qmdFallbackUsed: false,
+      qmdAvailable: true
+    }
+  });
+
+  assert.match(text, /Background jobs: 2 pending, 1 failed/);
+});
+
 test('formatAdaptiveSearchToolResult excludes verbose background job arrays from details', () => {
   const toolResult = formatAdaptiveSearchToolResult(sampleResult);
 

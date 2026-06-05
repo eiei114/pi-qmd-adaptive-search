@@ -152,8 +152,8 @@ function uniqueJobs(jobs) {
 }
 function backgroundJobStatusSummary(state) {
     const normalized = normalizeJobState(state);
-    const pendingJobs = normalized.pendingJobs || [];
     const currentJob = normalized.currentJob;
+    const pendingJobs = (normalized.pendingJobs || []).filter((pending) => pending.id !== currentJob?.id);
     const running = currentJob?.status === 'running';
     const pendingCount = pendingJobs.length + (running ? 1 : 0);
     const failedCount = (normalized.failedJobs || []).length;

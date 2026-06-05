@@ -52,7 +52,7 @@ export function formatCompactSearchText(value) {
         }
     }
     const jobStatus = value.backgroundJobStatus;
-    if (jobStatus && (jobStatus.failedCount > 0 || jobStatus.pendingCount > 0 || jobStatus.qmdFallbackUsed)) {
+    if (jobStatus && (jobStatus.failedCount > 0 || jobStatus.qmdFallbackUsed)) {
         const parts = [];
         if (jobStatus.qmdFallbackUsed)
             parts.push('qmd fallback used');

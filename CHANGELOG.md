@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Changed
+
+- Document the safe search output contract: Pi tool path-first default, snippet omission, output caps, and `qmd_adaptive_status` for verbose background job details.
+
 ## [1.0.0] - 2026-06-04
 
 ### Breaking Changes

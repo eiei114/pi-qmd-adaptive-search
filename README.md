@@ -54,6 +54,7 @@ meaning/intent     -> qmd-adaptive-search
 - Local feedback learning via `feedback`.
 - Shared aliases/boosts through explicit review.
 - Privacy-first storage: raw queries are not persisted.
+- Safe Pi tool output: compact path-first results; snippets omitted by default.
 
 ## Install
 
@@ -138,7 +139,8 @@ First run creates:
 ## Usage summary
 
 - `qmd-adaptive-search init`: bootstrap lightweight config files.
-- `qmd-adaptive-search search "<query>"`: run a search (add `--mode` or `--scope` to guide results).
+- `qmd-adaptive-search search "<query>"`: run a search locally (full JSON; add `--mode` or `--scope` to guide results).
+- `qmd_adaptive_search` (Pi tool): same search with compact path-first output for agents.
 - `qmd-adaptive-search feedback --selected <path> --rating good`: record useful results locally.
 - `qmd-adaptive-search review --approve`: promote safe shared aliases/boosts.
 - `qmd-adaptive-search status`: inspect qmd availability and recent job state.
@@ -199,6 +201,61 @@ The current MVP does not start long-running collection setup, collection update,
 
 Treat the `indexing`, `idle`, and `changeDetection` config fields as forward-compatible settings for future orchestration. Use the explicit `qmd-adaptive-search qmd setup|update|embed --dry-run` plan commands before running qmd maintenance.
 
+## Safe search output
+
+Search serves two UX paths: **Pi tools** for agent context safety and the **CLI** for local inspection.
+
+### Pi tool default (`qmd_adaptive_search`)
+
+- Returns compact, path-first plain text (not a pretty-printed JSON dump).
+- Structured `details` include `resultCount`, `resultPaths`, per-result `path` / `title` / `score` / `source` / `why`, `warnings`, and an optional compact `backgroundJobStatus`.
+- `lead` and `highlights` are intentionally omitted from returned output so search stays file discovery, not a partial read tool.
+- `maxResults` defaults to `10` and is hard-capped at `30`.
+
+Example tool text:
+
+```text
+qmd_adaptive_search: 2 result(s)
+1. docs/ProductSpec.md
+   title: ProductSpec | score: 0.45 | source: filename, path
+   why: matched alias: product; scope boost: docs
+2. README.md
+   title: README | score: 0.12 | source: path
+   why: scope boost: docs
+
+Warnings:
+- qmd was not found; using fallback search only.
+
+Background jobs: qmd fallback used (use qmd_adaptive_status for details).
+```
+
+### Snippets and output caps
+
+| Surface | Snippets in returned output | How to get content |
+| --- | --- | --- |
+| Pi tool `qmd_adaptive_search` | Omitted by design | Read returned paths with your file-read tool after discovery |
+| CLI `qmd-adaptive-search search` | Bounded `lead` / `highlights` in JSON | Local debugging or scripting only |
+
+CLI snippet fields are capped by `.qmd-adaptive-search/config.json` `search.*` settings (defaults shown):
+
+| Setting | Default | Purpose |
+| --- | --- | --- |
+| `search.maxLeadChars` | `300` | Max characters per `lead` |
+| `search.maxHighlightsPerResult` | `2` | Max highlight lines per result |
+| `search.maxHighlightChars` | `240` | Max characters per highlight line |
+| `search.hardMaxResults` | `30` | Hard cap on result count |
+
+Returned snippets are never persisted. See [Privacy model](#privacy-model).
+
+### Background job summary vs status tool
+
+| Need | Use |
+| --- | --- |
+| Quick hint during search (fallback used, failures) | `backgroundJobStatus` on `qmd_adaptive_search` |
+| Full job arrays, recovery hints, qmd health, learning counts | `qmd_adaptive_status` |
+
+`qmd_adaptive_search` shows a one-line background-job note only when qmd fallback was used or a job failed. Pending counts alone do not expand tool output. For `backgroundJobs`, `pendingBackgroundJobs`, `failedBackgroundJobs`, `lastBackgroundJob`, `lastSearchJob`, and `recoveryHints`, call `qmd_adaptive_status`.
+
 ## CLI
 
 ```text
@@ -225,6 +282,16 @@ MCP-style command names are accepted as CLI aliases:
 - `qmd_adaptive_status`
 
 When installed as a Pi package, these are registered as Pi tools as well.
+
+### Pi tools
+
+| Tool | Purpose | Default returned output |
+| --- | --- | --- |
+| `qmd_adaptive_search` | Semantic file discovery | Compact path-first text + lightweight `details` (no snippets) |
+| `qmd_search_feedback` | Record useful result paths | JSON summary of feedback recorded |
+| `qmd_adaptive_status` | Config, qmd health, learning, verbose job state | Full JSON status snapshot |
+
+`qmd_adaptive_search` parameters: `query` (required), optional `mode`, `scopeHint`, `maxResults` (1–30, default 10). Raw query text is not persisted.
 
 Pi slash commands (`qmd-a:*`):
 
@@ -451,6 +518,7 @@ Approved shared aliases/boosts are written to commit-friendly files in `.qmd-ada
 - qmd output parsing is path-based; non-path answer text is not converted into results.
 - Fallback search reads a bounded sample of text files and uses simple lexical scoring, so it can miss semantic matches.
 - Raw query text, snippets, and answer text are not persisted; this improves privacy but limits history-based learning.
+- Pi tool search output omits snippets by default; use path discovery first, then read files explicitly.
 - Shared learning is explicit: local feedback stays local until `review --approve` promotes suggestions.
 - File manifest and job-state files are local diagnostics, not authoritative qmd index state.
 
@@ -472,7 +540,40 @@ qmd-adaptive-search configure --preset privacy
 
 ## Result shape
 
-Search returns JSON:
+### Pi tool (`qmd_adaptive_search`)
+
+Primary agent UX is compact text plus lightweight `details`:
+
+```json
+{
+  "resultCount": 1,
+  "resultPaths": ["docs/ProductSpec.md"],
+  "warnings": [],
+  "results": [
+    {
+      "path": "docs/ProductSpec.md",
+      "title": "ProductSpec",
+      "score": 0.91,
+      "source": ["qmd", "filename", "boost"],
+      "why": ["scope boost: docs"]
+    }
+  ],
+  "backgroundJobStatus": {
+    "pendingCount": 0,
+    "failedCount": 0,
+    "running": false,
+    "lastSearchStatus": null,
+    "qmdFallbackUsed": false,
+    "qmdAvailable": null
+  }
+}
+```
+
+`lead`, `highlights`, and verbose `backgroundJobs` arrays are excluded from tool output by design.
+
+### CLI (`qmd-adaptive-search search`)
+
+The CLI prints full search JSON for local use, including bounded `lead` / `highlights` per result:
 
 ```json
 {
@@ -524,6 +625,8 @@ console.log(adaptiveStatus());
 
 ## Privacy model
 
+### Persistence privacy
+
 Persisted:
 
 - config
@@ -539,6 +642,17 @@ Not persisted:
 - returned snippets/highlights
 - answer text
 - file contents
+
+### Returned-output safety
+
+Even when search reads file content internally for ranking, returned output is bounded:
+
+- Pi tool `qmd_adaptive_search` omits `lead` and `highlights` from both text and `details`.
+- Result count is capped (`maxResults` default `10`, hard max `30`).
+- CLI JSON includes only capped snippet fields (`search.maxLeadChars`, `search.maxHighlightsPerResult`, `search.maxHighlightChars`).
+- Verbose background job arrays stay in `qmd_adaptive_status`, not in routine search tool output.
+
+This complements persistence privacy: less note text enters chat history during discovery, and agents are steered toward explicit file reads after choosing paths.
 
 ## Package contents
 

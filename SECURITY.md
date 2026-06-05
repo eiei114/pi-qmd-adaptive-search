@@ -18,4 +18,10 @@ This project intentionally avoids persisting:
 - snippets/highlights
 - file contents
 
-If a change needs to store more data, document the reason in the PR and update `README.md`.
+Returned-output safety (see `README.md`):
+
+- Pi tool `qmd_adaptive_search` returns compact path-first output and omits snippets from tool results.
+- CLI `search` may include bounded `lead` / `highlights` for local inspection only.
+- Verbose background job details belong in `qmd_adaptive_status`, not routine search output.
+
+If a change needs to store more data or broaden returned output, document the reason in the PR and update `README.md`.

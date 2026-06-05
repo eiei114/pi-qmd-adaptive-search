@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## [1.0.1] - 2026-06-06
+
+### Added
+
+- Maintainer-facing diagnosis pass (`diagnosis` field in `qmd_adaptive_status` output) that surfaces learned alias pollution, learned boost pollution, pending suggestion backlog, missing embeddings, and search history health in one summary.
+- Recovery guidance for each diagnosis bucket, pointing maintainers to the next safe action.
+- Search history diagnosis distinguishes current completed searches from stale failed/fallback history.
+- Exported `diagnoseSearchQuality()` from the library API for programmatic access.
+
 ### Changed
 
 - Document the safe search output contract: Pi tool path-first default, snippet omission, output caps, and `qmd_adaptive_status` for verbose background job details.

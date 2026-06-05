@@ -4,6 +4,7 @@ import { detectQmd } from './qmd.js';
 import { readJson, readJsonLines } from './fs-utils.js';
 import { backgroundJobSummary, readJobState } from './job-state.js';
 import { nextQmdOperation } from './qmd-operations.js';
+import { diagnoseSearchQuality } from './diagnosis.js';
 
 function countObject(file, key) {
   return Object.keys(readJson(file, { [key]: {} })[key] || {}).length;
@@ -47,7 +48,8 @@ function adaptiveStatus(options: any = {}) {
     recoveryHints: backgroundJobs.recoveryHints,
     suppressions: jobState.suppressions || {},
     recentSearches: (recent.searches || []).length,
-    localIgnored: fs.existsSync(p.local)
+    localIgnored: fs.existsSync(p.local),
+    diagnosis: diagnoseSearchQuality(root, config, qmd)
   };
 }
 

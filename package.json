@@ -1,6 +1,6 @@
 {
   "name": "pi-qmd-adaptive-search",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Project-local semantic file discovery with qmd, fallback search, and local adaptive feedback.",
   "type": "module",
   "keywords": [

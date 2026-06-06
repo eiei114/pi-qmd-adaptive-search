@@ -33,6 +33,7 @@ const CONSECUTIVE_FAILURE_CRIT = 3;
 const EMBED_DEBT_PERCENT_WARN = 20;
 const EMBED_DEBT_PERCENT_CRIT = 50;
 const EMBED_DEBT_ABS_WARN = 100;
+const EMBED_DEBT_ABS_CRIT = 300;
 
 /* ── Helpers ────────────────────────────────────────────────────── */
 
@@ -207,7 +208,7 @@ function analyzeEmbedDebt(root: string, config: any, qmd: any): DiagnosisBucket 
       message = `Embed debt is low: ${needsEmbeddings} documents (${embedDebtPercent}%) need embeddings.`;
     }
   } else if (needsEmbeddings !== null) {
-    severity = classifySeverity(needsEmbeddings, EMBED_DEBT_ABS_WARN, EMBED_DEBT_ABS_WARN * 3);
+    severity = classifySeverity(needsEmbeddings, EMBED_DEBT_ABS_WARN, EMBED_DEBT_ABS_CRIT);
     if (severity !== 'ok') {
       message = `${needsEmbeddings} documents need embeddings.`;
       recoveryAction = 'Consider running embeddings: qmd-adaptive-search qmd embed --dry-run.';

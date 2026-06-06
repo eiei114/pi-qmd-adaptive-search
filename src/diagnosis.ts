@@ -244,7 +244,7 @@ function analyzeSearchHistory(root: string): DiagnosisBucket {
     }
   }
 
-  const lastCompleted = [...recentJobs].reverse().find((job) =>
+  const lastCompleted = recentJobs.find((job) =>
     ['qmd-search', 'qmd-query'].includes(job.type) && job.status === 'completed'
   );
 

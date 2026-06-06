@@ -76,11 +76,13 @@ function readAllFiles(root) {
 }
 test('search creates lightweight config and returns fallback result', () => {
     const root = tempProject();
+    initProject(root);
+    configureFakeQmd(root, { searchStatus: 1, searchStderr: 'search failed' });
     const result = adaptiveSearch({ query: 'product decisions', maxResults: 5 }, { root });
     assert.equal(fs.existsSync(path.join(root, '.qmd-adaptive-search', 'config.json')), true);
     assert.equal(result.results[0].path, 'docs/ProductSpec.md');
     assert.equal(result.results[0].lead, 'Workout product decisions.');
-    assert.ok(result.warnings.some((warning) => warning.includes('qmd was not found')) || Array.isArray(result.warnings));
+    assert.ok(result.warnings.some((warning) => warning.includes('fallback used')));
 });
 test('feedback learns from recent result without storing raw query', () => {
     const root = tempProject();

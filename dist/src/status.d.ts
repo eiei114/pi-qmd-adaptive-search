@@ -192,5 +192,6 @@ declare function adaptiveStatus(options?: any): {
     suppressions: any;
     recentSearches: any;
     localIgnored: boolean;
+    diagnosis: import("./diagnosis.js").DiagnosisSummary;
 };
 export { adaptiveStatus };

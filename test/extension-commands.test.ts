@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { initProject } from '../src/index.js';
+import { initProject, loadConfig } from '../src/index.js';
 import {
   QMD_A_COLON_COMMANDS,
   registerQmdAdaptiveCommands,
@@ -52,6 +52,62 @@ test('colon qmd-a:approve dispatches without legacy approve subcommand', async (
   const result = await approve.handler('', { cwd: root, ui: { notify: () => {} } });
   const payload = JSON.parse(String((result as { content: { text: string }[] }).content[0].text));
   assert.equal(payload.ok, true);
+});
+
+test('qmd-a:configure with no args prompts for a preset and applies the selection', async () => {
+  const { pi, commands } = createMockPi();
+  registerQmdAdaptiveCommands(pi);
+  const root = tempProjectRoot();
+  const configure = commands.get('qmd-a:configure');
+  assert.ok(configure);
+
+  const notifications: string[] = [];
+  let selectTitle = '';
+  let selectOptions: string[] = [];
+  const result = await configure.handler('', {
+    cwd: root,
+    hasUI: true,
+    ui: {
+      notify: (text) => notifications.push(text),
+      select: async (title, options) => {
+        selectTitle = title;
+        selectOptions = options;
+        return 'privacy';
+      }
+    }
+  });
+
+  const payload = JSON.parse(String((result as { content: { text: string }[] }).content[0].text));
+  const config = loadConfig(root);
+
+  assert.equal(selectTitle, 'Choose qmd adaptive preset:');
+  assert.deepEqual(selectOptions, ['docs', 'mixed', 'code', 'privacy']);
+  assert.equal(payload.preset, 'privacy');
+  assert.equal(config.changeDetection.manifestEnabled, false);
+  assert.deepEqual(notifications, ['qmd adaptive preset applied: privacy']);
+});
+
+test('qmd-a:configure with no args in headless mode notifies that TUI selection is required', async () => {
+  const { pi, commands } = createMockPi();
+  registerQmdAdaptiveCommands(pi);
+  const root = tempProjectRoot();
+  const configure = commands.get('qmd-a:configure');
+  assert.ok(configure);
+
+  const notifications: { text: string; level: string }[] = [];
+  const result = await configure.handler('', {
+    cwd: root,
+    hasUI: false,
+    ui: { notify: (text, level) => notifications.push({ text, level }) }
+  });
+
+  const payload = JSON.parse(String((result as { content: { text: string }[] }).content[0].text));
+  assert.equal(payload.ok, false);
+  assert.equal(payload.error, 'ui_required');
+  assert.match(payload.message, /Preset selection requires the Pi TUI/);
+  assert.equal(notifications.length, 1);
+  assert.equal(notifications[0].level, 'warning');
+  assert.match(notifications[0].text, /qmd-adaptive-search configure --preset/);
 });
 
 test('qmd-a:setup-run runs operation; qmd-a:setup returns plan only', async () => {

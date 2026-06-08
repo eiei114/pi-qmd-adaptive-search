@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## [1.1.1] - 2026-06-09
+
+### Changed
+
+- Release hygiene: complete `CHANGELOG.md` coverage for the safe-output slices (compact tool output, snippet-safe defaults, background job summary, and output contract docs) and align `[1.1.0]` release notes with `package.json`.
+
+## [1.1.0] - 2026-06-08
+
 ### Added
 
 - `/qmd-a:configure` now opens a Pi TUI preset picker for `docs`, `mixed`, `code`, and `privacy` when no argument is supplied.
@@ -48,12 +56,18 @@ Removed deprecated Pi slash commands that were kept for one release after `0.3.0
 
 CLI subcommands (`qmd-adaptive-search init`, `review --approve`, etc.) and the `.qmd-adaptive-search/` config directory are unchanged.
 
+### Changed
+
+- `adaptiveSearch` and `qmd_adaptive_search` return a compact `backgroundJobStatus` summary instead of verbose `backgroundJobs` arrays; full job objects and recovery hints remain available via `qmd_adaptive_status`.
+
 ## [0.3.2] - 2026-06-03
 
 ### Changed
 
 - `qmd_adaptive_search` Pi tool now returns compact, path-first text by default instead of a pretty-printed JSON dump of the full search payload.
+- Default Pi tool output omits per-result `lead` and `highlights` (snippet-safe path discovery mode).
 - Tool `details` keeps lightweight `resultPaths` and per-result metadata for `qmd_search_feedback` without duplicating snippets or highlights.
+- `maxResults` is hard-capped at `30` even when callers or config request more.
 
 ## [0.3.1] - 2026-06-02
 

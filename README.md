@@ -145,6 +145,7 @@ First run creates:
 - `qmd-adaptive-search review --approve`: promote safe shared aliases/boosts.
 - `qmd-adaptive-search status`: inspect qmd availability and recent job state.
 - Use `qmd-adaptive` as a short alias for `qmd-adaptive-search search`.
+- In Pi TUI, use `/qmd-a:configure` to choose a preset from `docs`, `mixed`, `code`, or `privacy` without typing the preset name.
 
 For the full command list, see [CLI](#cli).
 
@@ -258,6 +259,8 @@ Returned snippets are never persisted. See [Privacy model](#privacy-model).
 
 ## CLI
 
+These commands are the scriptable CLI surface. In Pi TUI, prefer the `qmd-a:*` slash commands in the next section.
+
 ```text
 qmd-adaptive-search init
 qmd-adaptive-search search <query> [--mode auto|precision|recall|article|project] [--scope <path>] [--max 10]
@@ -293,7 +296,7 @@ When installed as a Pi package, these are registered as Pi tools as well.
 
 `qmd_adaptive_search` parameters: `query` (required), optional `mode`, `scopeHint`, `maxResults` (1–30, default 10). Raw query text is not persisted.
 
-Pi slash commands (`qmd-a:*`):
+Pi slash commands (`qmd-a:*`) are the primary interactive UX:
 
 | Command | Description |
 | --- | --- |
@@ -301,7 +304,7 @@ Pi slash commands (`qmd-a:*`):
 | `/qmd-a:status` | Show qmd/config/learning status |
 | `/qmd-a:review` | Show pending suggestions |
 | `/qmd-a:approve` | Promote pending suggestions to shared aliases/boosts |
-| `/qmd-a:configure <preset>` | Apply `docs`, `mixed`, `code`, or `privacy` preset |
+| `/qmd-a:configure` | Open a TUI preset picker for `docs`, `mixed`, `code`, or `privacy` |
 | `/qmd-a:install` | Show qmd install guidance |
 | `/qmd-a:setup` | Show qmd collection setup plan |
 | `/qmd-a:setup-run` | Run qmd collection setup |
@@ -309,6 +312,8 @@ Pi slash commands (`qmd-a:*`):
 | `/qmd-a:update-run` | Run qmd update |
 | `/qmd-a:embed` | Show qmd embed plan |
 | `/qmd-a:embed-run` | Run qmd embed |
+
+For scripts and headless runs, keep using CLI flags such as `qmd-adaptive-search review --approve` and `qmd-adaptive-search configure --preset privacy`. Space-argument and hyphen slash forms are not the primary Pi TUI path.
 
 ## Examples
 
@@ -405,6 +410,16 @@ Raw query text, snippets, answer text, file contents, and query hashes are not p
 ### Privacy preset intent
 
 Use the `privacy` preset when a repo should avoid automatic indexing/update behavior and keep learning local until an explicit review:
+
+Pi TUI:
+
+```text
+/qmd-a:configure
+```
+
+Then choose `privacy` in the preset picker.
+
+CLI/scripts:
 
 ```bash
 qmd-adaptive-search configure --preset privacy
@@ -523,6 +538,10 @@ Approved shared aliases/boosts are written to commit-friendly files in `.qmd-ada
 - File manifest and job-state files are local diagnostics, not authoritative qmd index state.
 
 ## Configuration presets
+
+In Pi TUI, run `/qmd-a:configure` and choose a preset from the selector.
+
+CLI/script equivalents:
 
 ```bash
 qmd-adaptive-search configure --preset docs

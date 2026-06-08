@@ -15,8 +15,11 @@ import { formatAdaptiveSearchToolResult } from './search-result-format.js';
 
 export interface ExtensionCommandContext {
   cwd: string;
+  hasUI?: boolean;
+  mode?: string;
   ui: {
     notify: (text: string, level: string) => void;
+    select?: (title: string, options: string[]) => string | undefined | Promise<string | undefined>;
   };
 }
 
@@ -59,6 +62,7 @@ function hasYesFlag(text: string): boolean {
 
 const SEARCH_MODES = ['auto', 'precision', 'recall', 'article', 'project'] as const;
 const FEEDBACK_RATINGS = ['good', 'bad'] as const;
+const CONFIGURE_PRESETS = ['docs', 'mixed', 'code', 'privacy'] as const;
 
 function normalizeSearchToolParams(params: {
   query: string;
@@ -105,9 +109,31 @@ function handleApprove(ctx: ExtensionCommandContext) {
   return jsonResult(approveSuggestions({ root: ctx.cwd }));
 }
 
-function handleConfigure(args: string, ctx: ExtensionCommandContext) {
-  const preset = String(args || 'mixed').trim() || 'mixed';
-  return jsonResult(applyPreset(ctx.cwd, preset));
+function applyConfigurePreset(preset: string, ctx: ExtensionCommandContext) {
+  const result = applyPreset(ctx.cwd, preset);
+  ctx.ui.notify(`qmd adaptive preset applied: ${preset}`, 'info');
+  return jsonResult(result);
+}
+
+async function handleConfigure(args: string, ctx: ExtensionCommandContext) {
+  const presetArg = String(args || '').trim();
+  if (presetArg) return applyConfigurePreset(presetArg, ctx);
+
+  if (ctx.hasUI === false || typeof ctx.ui.select !== 'function') {
+    const message =
+      'Preset selection requires the Pi TUI. For scripts or headless runs, use `qmd-adaptive-search configure --preset docs|mixed|code|privacy`.';
+    ctx.ui.notify(message, 'warning');
+    return jsonResult({ ok: false, error: 'ui_required', message, presets: CONFIGURE_PRESETS });
+  }
+
+  const selected = await ctx.ui.select('Choose qmd adaptive preset:', [...CONFIGURE_PRESETS]);
+  if (!selected) {
+    ctx.ui.notify('qmd adaptive preset selection cancelled', 'warning');
+    return jsonResult({ ok: false, cancelled: true, presets: CONFIGURE_PRESETS });
+  }
+
+  const preset = String(selected).trim();
+  return applyConfigurePreset(preset, ctx);
 }
 
 function handleInstall() {
@@ -216,7 +242,7 @@ export function registerQmdAdaptiveCommands(pi: ExtensionAPILike) {
       handler: async (_args, ctx) => handleApprove(ctx)
     },
     'qmd-a:configure': {
-      description: 'Apply a qmd adaptive preset: docs, mixed, code, or privacy',
+      description: 'Choose and apply a qmd adaptive preset: docs, mixed, code, or privacy',
       handler: async (args, ctx) => handleConfigure(args, ctx)
     },
     'qmd-a:install': {

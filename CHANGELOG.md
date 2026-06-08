@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+
+- `/qmd-a:configure` now opens a Pi TUI preset picker for `docs`, `mixed`, `code`, and `privacy` when no argument is supplied.
+
+### Changed
+
+- README now presents `qmd-a:*` colon slash commands as the primary Pi UX and labels CLI flag forms as script/headless usage.
+
 ## [1.0.1] - 2026-06-06
 
 ### Added

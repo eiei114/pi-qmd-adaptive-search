@@ -5,6 +5,7 @@ import { initProject, loadConfig, paths } from './config.js';
 import { qmdSearch, installInstructions } from './qmd.js';
 import { readJson, writeJson, toPosix } from './fs-utils.js';
 import { backgroundJobStatusSummary, finishQmdSearchJob, readJobState, startQmdSearchJob } from './job-state.js';
+import { expandAliasTerms, effectiveBoostValue } from './ranking-guardrails.js';
 const TEXT_EXTS = new Set(['.md', '.txt', '.ts', '.tsx', '.js', '.py', '.json', '.yaml', '.yml']);
 function tokenize(value) {
     return Array.from(new Set(String(value || '').toLowerCase().split(/[\s\p{P}\p{S}]+/u).filter((t) => t.length >= 2).slice(0, 12)));
@@ -104,24 +105,29 @@ function highlights(root, rel, terms, maxPer, maxChars) {
 }
 function loadAliasTerms(root, queryTerms) {
     const p = paths(root);
-    const stores = [readJson(p.sharedAliases, { aliases: {} }), readJson(p.learnedAliases, { aliases: {} })];
+    const stores = [
+        { kind: 'shared', data: readJson(p.sharedAliases, { aliases: {} }) },
+        { kind: 'learned', data: readJson(p.learnedAliases, { aliases: {} }) }
+    ];
     const expanded = new Set(queryTerms);
     const why = [];
-    for (const store of stores) {
-        for (const [key, values] of Object.entries(store.aliases || {})) {
-            const all = [key, ...(Array.isArray(values) ? values : [])].map((v) => String(v).toLowerCase());
-            if (all.some((v) => queryTerms.includes(v))) {
-                all.forEach((v) => expanded.add(v));
-                why.push(`matched alias: ${key}`);
-            }
+    for (const { kind, data } of stores) {
+        for (const [key, values] of Object.entries(data.aliases || {})) {
+            const result = expandAliasTerms(queryTerms, key, Array.isArray(values) ? values : [], kind);
+            for (const term of result.terms)
+                expanded.add(term);
+            if (result.why)
+                why.push(result.why);
         }
     }
     return { terms: Array.from(expanded), why };
 }
 function loadBoosts(root) {
     const p = paths(root);
-    return [readJson(p.sharedBoosts, { boosts: {} }), readJson(p.learnedBoosts, { boosts: {} })]
-        .flatMap((store) => Object.entries(store.boosts || {}));
+    return [
+        ...Object.entries(readJson(p.sharedBoosts, { boosts: {} }).boosts || {}).map(([boostPath, value]) => [boostPath, value, 'shared']),
+        ...Object.entries(readJson(p.learnedBoosts, { boosts: {} }).boosts || {}).map(([boostPath, value]) => [boostPath, value, 'learned'])
+    ];
 }
 function scoreFile(root, rel, terms, scopeHints, mode, boostEntries) {
     const baseName = path.basename(rel).toLowerCase();
@@ -163,11 +169,15 @@ function scoreFile(root, rel, terms, scopeHints, mode, boostEntries) {
             why.push(`scope keyword: ${hint}`);
         }
     }
-    for (const [boostPath, value] of boostEntries) {
+    for (const entry of boostEntries) {
+        const boostPath = entry[0];
+        const value = entry[1];
+        const store = entry[2];
         if (rel === boostPath || relLower.startsWith(toPosix(boostPath).toLowerCase())) {
-            score += Number(value) || 0.05;
+            const raw = Number(value) || 0.05;
+            score += effectiveBoostValue(raw, store);
             source.push('boost');
-            why.push(`learned boost: ${boostPath}`);
+            why.push(`${store} boost: ${boostPath}`);
         }
     }
     if (/archive|_archive|old|deprecated/i.test(rel)) {

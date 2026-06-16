@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## [1.1.2] - 2026-06-17
+
+### Added
+
+- Ranking guardrails that ignore low-information learned alias keys, filter generic learned alias values, and soft-cap learned boosts so polluted local state cannot dominate unrelated searches.
+- Regression tests for polluted learned state and informative learned alias success cases.
+- Maintainer documentation for ranking guardrail behavior and tuning points in `src/ranking-guardrails.ts`.
+
 ## [1.1.1] - 2026-06-09
 
 ### Changed

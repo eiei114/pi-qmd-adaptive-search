@@ -169,9 +169,20 @@ Missing qmd is supported. Search still:
 - creates `.qmd-adaptive-search/` on first run;
 - scans files matching `fileGlobs` and not matching `excludeGlobs`;
 - ranks filename, path, content, scope hints, aliases, and boosts;
+- applies ranking guardrails so low-information learned aliases and runaway learned boosts cannot drown out lexical relevance;
 - returns JSON `results`, plus a warning beginning with `qmd was not found.` and install/config guidance.
 
 Expected trade-off: fallback search is lexical, not semantic. It is useful for file discovery and obvious content matches, but vague intent-based queries improve when qmd is installed and indexed.
+
+### Ranking guardrails
+
+Search applies maintainer-tunable guardrails so polluted local learning does not overpower qmd and lexical relevance:
+
+- **Learned aliases**: keys in the low-information token set (for example `content`, `templates`, `post`) are ignored for query expansion. Informative learned aliases still expand, but generic alias values are filtered out. Reviewed shared aliases are unchanged.
+- **Learned boosts**: each path contribution is soft-capped (`LEARNED_BOOST_CAP = 0.15`) with `tanh` saturation so repeated feedback cannot create runaway dominance. Shared boosts use a higher cap (`SHARED_BOOST_CAP = 0.25`) because they were explicitly approved.
+- **Diagnosis alignment**: `qmd-adaptive-search status` diagnosis buckets surface the same generic tokens and runaway boost threshold (`|value| >= 0.5`) so maintainers can prune state before ranking guardrails need to compensate.
+
+Tuning lives in `src/ranking-guardrails.ts`. Change caps there intentionally and add regression tests when adjusting behavior.
 
 ### qmd setup/update/embed safety
 

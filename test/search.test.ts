@@ -55,6 +55,16 @@ function configureFakeQmd(root, options: any = {}) {
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
 }
 
+function writeLearnedAliases(root, aliases) {
+  const p = path.join(root, '.qmd-adaptive-search', 'local', 'learned-aliases.json');
+  fs.writeFileSync(p, JSON.stringify({ aliases }, null, 2), 'utf8');
+}
+
+function writeLearnedBoosts(root, boosts) {
+  const p = path.join(root, '.qmd-adaptive-search', 'local', 'learned-boosts.json');
+  fs.writeFileSync(p, JSON.stringify({ boosts }, null, 2), 'utf8');
+}
+
 function withPathPrefix(prefix, run) {
   const pathKey = Object.keys(process.env).find((key) => key.toLowerCase() === 'path') || 'PATH';
   const oldPath = process.env[pathKey];
@@ -380,4 +390,45 @@ test('qmd search failure still returns fallback results with warning', () => {
 
   assert.equal(result.results[0].path, 'docs/ProductSpec.md');
   assert.ok(result.warnings.some((warning) => warning.includes('qmd search failed; fallback used')));
+});
+
+test('generic learned aliases do not dominate unrelated vague searches', () => {
+  const root = tempProject();
+  configureFakeQmd(root, { searchStatus: 1, searchStderr: 'skip qmd for polluted-state regression' });
+  fs.mkdirSync(path.join(root, 'content'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'content', 'templates.md'), '# Templates\n', 'utf8');
+  fs.writeFileSync(path.join(root, 'content', 'single-post.md'), '# Single Post\n', 'utf8');
+  writeLearnedAliases(root, {
+    content: ['templates', 'single', 'post'],
+    post: ['templates', 'content'],
+    templates: ['content', 'single']
+  });
+  writeLearnedBoosts(root, {
+    'content/templates.md': 1.2,
+    'content/single-post.md': 0.9
+  });
+
+  const result = adaptiveSearch({ query: 'product decisions', maxResults: 5 }, { root });
+  const polluted = result.results.find((item) => item.path === 'content/templates.md');
+
+  assert.equal(result.results[0].path, 'docs/ProductSpec.md');
+  assert.ok(result.results[0].score > (polluted?.score || 0));
+});
+
+test('informative learned aliases still help durable project vocabulary', () => {
+  const root = tempProject();
+  configureFakeQmd(root, { searchStatus: 1, searchStderr: 'skip qmd for learned-state success case' });
+  initProject(root);
+  writeLearnedAliases(root, {
+    portability: ['productspec', 'export']
+  });
+  writeLearnedBoosts(root, {
+    'docs/ProductSpec.md': 0.12
+  });
+
+  const result = adaptiveSearch({ query: 'data portability', maxResults: 5 }, { root });
+
+  assert.equal(result.results[0].path, 'docs/ProductSpec.md');
+  assert.ok(result.results[0].why.some((line) => String(line).includes('matched alias: portability')));
+  assert.ok(result.results[0].why.some((line) => String(line).includes('learned boost: docs/ProductSpec.md')));
 });

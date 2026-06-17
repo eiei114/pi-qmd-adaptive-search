@@ -1,4 +1,5 @@
 export { diagnoseSearchQuality } from './diagnosis.js';
+export { maintenancePlan, runMaintenance } from './maintenance.js';
 export { initProject, loadConfig, applyPreset } from './config.js';
 export { adaptiveSearch } from './search.js';
 export { recordFeedback, reviewSuggestions, approveSuggestions } from './feedback.js';
@@ -12,6 +13,7 @@ export {
 } from './search-result-format.js';
 
 import { diagnoseSearchQuality } from './diagnosis.js';
+import { maintenancePlan, runMaintenance } from './maintenance.js';
 import { initProject, loadConfig, applyPreset } from './config.js';
 import { adaptiveSearch } from './search.js';
 import { recordFeedback, reviewSuggestions, approveSuggestions } from './feedback.js';
@@ -21,6 +23,8 @@ import { qmdOperationPlan, runQmdOperation, nextQmdOperation } from './qmd-opera
 
 export default {
   diagnoseSearchQuality,
+  maintenancePlan,
+  runMaintenance,
   initProject,
   loadConfig,
   applyPreset,

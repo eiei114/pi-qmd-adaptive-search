@@ -6,6 +6,7 @@ import { recordFeedback, reviewSuggestions, approveSuggestions } from './feedbac
 import { adaptiveStatus } from './status.js';
 import { detectQmd, installInstructions } from './qmd.js';
 import { qmdOperationPlan, runQmdOperation } from './qmd-operations.js';
+import { maintenancePlan, runMaintenance } from './maintenance.js';
 import { loadConfig } from './config.js';
 import { spawnSync } from 'node:child_process';
 function parseArgs(argv) {
@@ -42,6 +43,7 @@ Usage:
   qmd-adaptive-search review [--approve]
   qmd-adaptive-search install-qmd [--manager bun|npm|pnpm|yarn] [--yes]
   qmd-adaptive-search qmd setup|update|embed [--dry-run] [--yes]
+  qmd-adaptive-search maintain [learned-aliases|learned-boosts|pending-suggestions|all ...] [--dry-run] [--yes]
 
 MCP-style tool names:
   qmd_adaptive_search, qmd_search_feedback, qmd_adaptive_status
@@ -112,6 +114,16 @@ async function runCli(argv) {
         if (!approved)
             return printJson({ ok: false, cancelled: true, plan, nextCommand: plan.confirmCommand });
         return printJson(runQmdOperation(operation, { ...args, yes: true }));
+    }
+    if (command === 'maintain' || command === '/qmd-adaptive-maintain') {
+        const targets = args.targets || args._[1] || args._.slice(1);
+        const plan = maintenancePlan(process.cwd(), { targets });
+        if (args['dry-run'] || args.plan)
+            return printJson({ ok: true, dryRun: true, plan, before: runMaintenance(process.cwd(), { targets, dryRun: true }).before });
+        const approved = args.yes || await confirm('Run learned-state maintenance cleanup?');
+        if (!approved)
+            return printJson({ ok: false, cancelled: true, plan, nextCommand: plan.confirmCommand });
+        return printJson(runMaintenance(process.cwd(), { targets, yes: true }));
     }
     if (command === 'install-qmd' || command === '/qmd-adaptive-install-qmd')
         return printJson(await installQmd(args));

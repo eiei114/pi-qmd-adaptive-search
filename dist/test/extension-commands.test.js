@@ -72,6 +72,19 @@ test('qmd-a:configure with no args prompts for a preset and applies the selectio
     assert.equal(config.changeDetection.manifestEnabled, false);
     assert.deepEqual(notifications, ['qmd adaptive preset applied: privacy']);
 });
+test('colon qmd-a:maintain shows cleanup plan without modifying state', async () => {
+    const { pi, commands } = createMockPi();
+    registerQmdAdaptiveCommands(pi);
+    const root = tempProjectRoot();
+    const maintain = commands.get('qmd-a:maintain');
+    assert.ok(maintain);
+    const learnedAliases = path.join(root, '.qmd-adaptive-search', 'local', 'learned-aliases.json');
+    fs.writeFileSync(learnedAliases, JSON.stringify({ aliases: { content: ['data'] } }, null, 2), 'utf8');
+    const result = await maintain.handler('', { cwd: root, ui: { notify: () => { } } });
+    const payload = JSON.parse(String(result.content[0].text));
+    assert.equal(payload.actions.length, 3);
+    assert.equal(JSON.parse(fs.readFileSync(learnedAliases, 'utf8')).aliases.content.length, 1);
+});
 test('qmd-a:configure with no args in headless mode notifies that TUI selection is required', async () => {
     const { pi, commands } = createMockPi();
     registerQmdAdaptiveCommands(pi);

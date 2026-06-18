@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## [1.1.3] - 2026-06-19
+
+### Changed
+
+- README release docs now describe OIDC Trusted Publishing only; removed legacy token publish fallback instructions.
+
 ## [1.1.2] - 2026-06-17
 
 ### Added

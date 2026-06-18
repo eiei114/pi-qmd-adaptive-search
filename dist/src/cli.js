@@ -116,7 +116,8 @@ async function runCli(argv) {
         return printJson(runQmdOperation(operation, { ...args, yes: true }));
     }
     if (command === 'maintain' || command === '/qmd-adaptive-maintain') {
-        const targets = args.targets || args._.slice(1);
+        const positionalTargets = args._.slice(1);
+        const targets = args.targets ?? (positionalTargets.length <= 1 ? positionalTargets[0] : positionalTargets);
         const plan = maintenancePlan(process.cwd(), { targets });
         if (args['dry-run'] || args.plan)
             return printJson({ ok: true, dryRun: true, plan, before: runMaintenance(process.cwd(), { targets, dryRun: true }).before });

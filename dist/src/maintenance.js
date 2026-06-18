@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { paths } from './config.js';
+import { initProject, paths } from './config.js';
 import { readJson, readJsonLines, writeJson } from './fs-utils.js';
 import { adaptiveStatus } from './status.js';
 /** Local learned-state targets aligned with diagnosis bucket vocabulary. */
@@ -146,6 +146,7 @@ function runMaintenance(root, options = {}) {
             nextCommand: plan.confirmCommand
         };
     }
+    initProject(root);
     const actions = [];
     for (const action of plan.actions) {
         if (action.beforeCount > 0)

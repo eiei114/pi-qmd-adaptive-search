@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { paths } from './config.js';
+import { initProject, paths } from './config.js';
 import { readJson, readJsonLines, writeJson } from './fs-utils.js';
 import { diagnoseSearchQuality } from './diagnosis.js';
 import { adaptiveStatus } from './status.js';
@@ -213,6 +213,8 @@ function runMaintenance(
       nextCommand: plan.confirmCommand
     };
   }
+
+  initProject(root);
 
   const actions: MaintenanceActionResult[] = [];
   for (const action of plan.actions) {

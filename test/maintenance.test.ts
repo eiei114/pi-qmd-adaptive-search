@@ -84,6 +84,15 @@ test('runMaintenance requires confirmation before destructive cleanup', () => {
   assert.equal(countLearnedState(root).learnedAliases, 2);
 });
 
+test('runMaintenance skips confirmation when cleanup is non-destructive', () => {
+  const root = tempProject();
+
+  const result = runMaintenance(root, { targets: ['learned-aliases'] });
+  assert.equal(result.ok, true);
+  assert.equal(result.confirmationRequired, undefined);
+  assert.equal(countLearnedState(root).learnedAliases, 0);
+});
+
 test('runMaintenance dry-run does not modify learned state', () => {
   const root = tempProject();
   writeLearnedAliases(root, { content: ['data'] });

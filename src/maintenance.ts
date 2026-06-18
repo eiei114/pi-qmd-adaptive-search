@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { initProject, paths } from './config.js';
+import { paths } from './config.js';
 import { readJson, readJsonLines, writeJson } from './fs-utils.js';
 import { diagnoseSearchQuality } from './diagnosis.js';
 import { adaptiveStatus } from './status.js';
@@ -142,7 +142,6 @@ function clearTarget(root: string, target: MaintenanceTarget): void {
 }
 
 function maintenancePlan(root: string, options: { targets?: unknown } = {}): MaintenancePlan {
-  initProject(root);
   const targets = normalizeTargets(options.targets);
   const actions = targets.map((target) => {
     const beforeCount = countForTarget(root, target);
@@ -185,16 +184,6 @@ function runMaintenance(
     return { ok: true, dryRun: true, plan, before };
   }
 
-  if (!options.yes) {
-    return {
-      ok: false,
-      confirmationRequired: true,
-      plan,
-      before,
-      nextCommand: plan.confirmCommand
-    };
-  }
-
   if (!plan.destructive) {
     const status = adaptiveStatus({ root });
     return {
@@ -212,6 +201,16 @@ function runMaintenance(
       })),
       status,
       diagnosis: status.diagnosis
+    };
+  }
+
+  if (!options.yes) {
+    return {
+      ok: false,
+      confirmationRequired: true,
+      plan,
+      before,
+      nextCommand: plan.confirmCommand
     };
   }
 

@@ -116,14 +116,14 @@ async function runCli(argv) {
         return printJson(runQmdOperation(operation, { ...args, yes: true }));
     }
     if (command === 'maintain' || command === '/qmd-adaptive-maintain') {
-        const targets = args.targets || args._[1] || args._.slice(1);
+        const targets = args.targets || args._.slice(1);
         const plan = maintenancePlan(process.cwd(), { targets });
         if (args['dry-run'] || args.plan)
             return printJson({ ok: true, dryRun: true, plan, before: runMaintenance(process.cwd(), { targets, dryRun: true }).before });
-        const approved = args.yes || await confirm('Run learned-state maintenance cleanup?');
+        const approved = !plan.destructive || args.yes || await confirm('Run learned-state maintenance cleanup?');
         if (!approved)
             return printJson({ ok: false, cancelled: true, plan, nextCommand: plan.confirmCommand });
-        return printJson(runMaintenance(process.cwd(), { targets, yes: true }));
+        return printJson(runMaintenance(process.cwd(), { targets, yes: !!args.yes || plan.destructive }));
     }
     if (command === 'install-qmd' || command === '/qmd-adaptive-install-qmd')
         return printJson(await installQmd(args));

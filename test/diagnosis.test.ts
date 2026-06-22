@@ -94,7 +94,7 @@ test('diagnosis flags critical when generic aliases dominate', () => {
 
   assert.equal(bucket!.severity, 'critical');
   assert.ok((bucket!.details.genericRatio as number) >= 0.4);
-  assert.ok(bucket!.recoveryAction!.includes('learned-aliases.json'));
+  assert.ok(bucket!.recoveryAction!.includes('maintain learned-aliases'));
 });
 
 test('diagnosis reports generic aliases with low count as ok', () => {
@@ -141,7 +141,7 @@ test('diagnosis flags critical for runaway boosts', () => {
 
   assert.equal(bucket!.severity, 'critical');
   assert.equal(bucket!.details.runawayCount, 2);
-  assert.ok(bucket!.recoveryAction!.includes('learned-boosts.json'));
+  assert.ok(bucket!.recoveryAction!.includes('maintain learned-boosts'));
 });
 
 /* ── Pending suggestion backlog ─────────────────────────────────── */
@@ -168,7 +168,7 @@ test('diagnosis flags critical for large pending suggestion backlog', () => {
   const bucket = diagnosis.buckets.find((b) => b.name === 'pending-suggestion-backlog');
 
   assert.equal(bucket!.severity, 'critical');
-  assert.ok(bucket!.recoveryAction!.includes('review --approve'));
+  assert.ok(bucket!.recoveryAction!.includes('maintain pending-suggestions'));
 });
 
 /* ── Missing embeddings ─────────────────────────────────────────── */

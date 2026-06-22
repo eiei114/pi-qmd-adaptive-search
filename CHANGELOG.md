@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## [1.2.0] - 2026-06-22
+
+### Added
+
+- Maintainer cleanup workflow via `qmd-adaptive-search maintain` and `/qmd-a:maintain` / `/qmd-a:maintain-run` for resetting polluted local learned aliases, learned boosts, and stale pending suggestions without hand-editing files under `.qmd-adaptive-search/local/`.
+- Explicit confirmation (`--yes` or interactive prompt) before destructive cleanup, plus dry-run plans and post-cleanup status counts aligned with diagnosis bucket vocabulary.
+- Tests for cleanup behavior, confirmation boundaries, and shared-state safety.
+
+### Changed
+
+- Diagnosis recovery guidance now points maintainers to the maintenance workflow instead of manual JSON edits when learned state is polluted.
+
 ## [1.1.3] - 2026-06-19
 
 ### Changed

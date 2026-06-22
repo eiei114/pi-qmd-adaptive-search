@@ -144,6 +144,7 @@ First run creates:
 - `qmd-adaptive-search feedback --selected <path> --rating good`: record useful results locally.
 - `qmd-adaptive-search review --approve`: promote safe shared aliases/boosts.
 - `qmd-adaptive-search status`: inspect qmd availability and recent job state.
+- `qmd-adaptive-search maintain`: reset polluted local learned aliases, boosts, or pending suggestions safely.
 - Use `qmd-adaptive` as a short alias for `qmd-adaptive-search search`.
 - In Pi TUI, use `/qmd-a:configure` to choose a preset from `docs`, `mixed`, `code`, or `privacy` without typing the preset name.
 
@@ -213,6 +214,33 @@ The current MVP does not start long-running collection setup, collection update,
 
 Treat the `indexing`, `idle`, and `changeDetection` config fields as forward-compatible settings for future orchestration. Use the explicit `qmd-adaptive-search qmd setup|update|embed --dry-run` plan commands before running qmd maintenance.
 
+### Learned-state maintenance
+
+When diagnosis reports polluted local learning (`learned-alias-pollution`, `learned-boost-pollution`, or `pending-suggestion-backlog`), use the maintenance workflow instead of hand-editing files under `.qmd-adaptive-search/local/`:
+
+```bash
+qmd-adaptive-search status
+qmd-adaptive-search maintain --dry-run
+qmd-adaptive-search maintain learned-aliases learned-boosts pending-suggestions --yes
+```
+
+In Pi TUI:
+
+- `/qmd-a:maintain` shows the cleanup plan.
+- `/qmd-a:maintain-run` resets the selected local targets after you review the plan.
+
+Choose the right recovery path:
+
+| Problem | Prefer |
+| --- | --- |
+| Generic or runaway **local** learned aliases/boosts | `maintain learned-aliases` / `maintain learned-boosts` |
+| Large backlog of **stale** pending suggestions you do not want to promote | `maintain pending-suggestions` |
+| Suggestions you still want to promote to shared state | `review` then `review --approve` |
+| Missing embeddings / embed debt (`missing-embeddings`) | `qmd embed --dry-run` then `qmd embed --yes` |
+| qmd index drift or collection setup issues | `qmd setup` / `qmd update` plans, not learned-state cleanup |
+
+Maintenance only clears **local** learned state. Shared aliases and shared boosts are never modified.
+
 ## Safe search output
 
 Search serves two UX paths: **Pi tools** for agent context safety and the **CLI** for local inspection.
@@ -281,6 +309,7 @@ qmd-adaptive-search configure --preset docs|mixed|code|privacy [--reset]
 qmd-adaptive-search review [--approve]
 qmd-adaptive-search install-qmd [--manager bun|npm|pnpm|yarn] [--yes]
 qmd-adaptive-search qmd setup|update|embed [--dry-run] [--yes]
+qmd-adaptive-search maintain [learned-aliases|learned-boosts|pending-suggestions|all ...] [--dry-run] [--yes]
 ```
 
 Short alias:
@@ -323,6 +352,8 @@ Pi slash commands (`qmd-a:*`) are the primary interactive UX:
 | `/qmd-a:update-run` | Run qmd update |
 | `/qmd-a:embed` | Show qmd embed plan |
 | `/qmd-a:embed-run` | Run qmd embed |
+| `/qmd-a:maintain` | Show learned-state cleanup plan |
+| `/qmd-a:maintain-run` | Reset polluted local learned aliases, boosts, or pending suggestions |
 
 For scripts and headless runs, keep using CLI flags such as `qmd-adaptive-search review --approve` and `qmd-adaptive-search configure --preset privacy`. Space-argument and hyphen slash forms are not the primary Pi TUI path.
 
@@ -636,7 +667,9 @@ The CLI prints full search JSON for local use, including bounded `lead` / `highl
 const {
   adaptiveSearch,
   recordFeedback,
-  adaptiveStatus
+  adaptiveStatus,
+  maintenancePlan,
+  runMaintenance
 } = require('pi-qmd-adaptive-search');
 
 const found = adaptiveSearch({
@@ -704,6 +737,7 @@ src/                    TypeScript library implementation
   qmd.ts                qmd detection and search bridge
   search.ts             fallback search, ranking, result shaping
   feedback.ts           local learning and review promotion
+  maintenance.ts        learned-state cleanup workflow
   status.ts             status snapshot
 extensions/index.ts     Pi extension entrypoint
 dist/                   Compiled npm runtime output

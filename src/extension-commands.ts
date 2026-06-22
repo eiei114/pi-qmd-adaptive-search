@@ -9,7 +9,9 @@ import {
   approveSuggestions,
   installInstructions,
   qmdOperationPlan,
-  runQmdOperation
+  runQmdOperation,
+  maintenancePlan,
+  runMaintenance
 } from './index.js';
 import { formatAdaptiveSearchToolResult } from './search-result-format.js';
 
@@ -45,7 +47,9 @@ export const QMD_A_COLON_COMMANDS = [
   'qmd-a:update',
   'qmd-a:update-run',
   'qmd-a:embed',
-  'qmd-a:embed-run'
+  'qmd-a:embed-run',
+  'qmd-a:maintain',
+  'qmd-a:maintain-run'
 ] as const;
 
 function textResult(text: string, details: Record<string, unknown> = {}) {
@@ -151,6 +155,20 @@ function handleQmdOperation(
     return jsonResult({ plan: qmdOperationPlan(operation, {}, { root: ctx.cwd }) });
   }
   return jsonResult(runQmdOperation(operation, runOptions, { root: ctx.cwd }));
+}
+
+function parseMaintainTargets(args: string): string | string[] | undefined {
+  const trimmed = String(args || '').trim();
+  if (!trimmed) return undefined;
+  return trimmed.split(/\s+/).filter(Boolean);
+}
+
+function handleMaintain(args: string, ctx: ExtensionCommandContext, options: { execute: boolean }) {
+  const targets = parseMaintainTargets(args);
+  if (!options.execute) {
+    return jsonResult(maintenancePlan(ctx.cwd, { targets }));
+  }
+  return jsonResult(runMaintenance(ctx.cwd, { targets, yes: true }));
 }
 
 export function registerQmdAdaptiveTools(pi: ExtensionAPILike) {
@@ -272,6 +290,14 @@ export function registerQmdAdaptiveCommands(pi: ExtensionAPILike) {
     'qmd-a:embed-run': {
       description: 'Run qmd embedding after review',
       handler: async (_args, ctx) => handleQmdOperation('embed', '', ctx, { execute: true })
+    },
+    'qmd-a:maintain': {
+      description: 'Show learned-state maintenance cleanup plan',
+      handler: async (args, ctx) => handleMaintain(args, ctx, { execute: false })
+    },
+    'qmd-a:maintain-run': {
+      description: 'Reset polluted local learned aliases, boosts, or pending suggestions',
+      handler: async (args, ctx) => handleMaintain(args, ctx, { execute: true })
     }
   };
 

@@ -88,10 +88,10 @@ function analyzeLearnedAliases(root: string): DiagnosisBucket {
 
   if (severity === 'critical') {
     message += ' Learned aliases are heavily polluted with generic terms that degrade search ranking.';
-    recoveryAction = 'Review and prune generic learned aliases: edit .qmd-adaptive-search/local/learned-aliases.json to remove low-information entries, or delete the file to reset all learned aliases.';
+    recoveryAction = 'Reset polluted learned aliases: qmd-adaptive-search maintain learned-aliases --dry-run, then qmd-adaptive-search maintain learned-aliases --yes. Prefer review --approve when only a few entries are wrong.';
   } else if (severity === 'warning') {
     message += ' Some generic aliases may be reducing search quality.';
-    recoveryAction = 'Consider reviewing learned aliases for generic terms: run qmd-adaptive-search status and inspect aliases.learned. Prune via .qmd-adaptive-search/local/learned-aliases.json.';
+    recoveryAction = 'Consider resetting learned aliases: qmd-adaptive-search maintain learned-aliases --dry-run, then qmd-adaptive-search maintain learned-aliases --yes if pollution is widespread.';
   }
 
   return {
@@ -121,10 +121,10 @@ function analyzeLearnedBoosts(root: string): DiagnosisBucket {
   if (runaway.length > 0) {
     const sample = runaway.slice(0, 3).map(([k]) => k).join(', ');
     message += ` ${runaway.length} runaway boost(s) (|value| >= ${RUNAWAY_BOOST_THRESHOLD}): ${sample}${runaway.length > 3 ? ' …' : ''}.`;
-    recoveryAction = 'Review and cap runaway learned boosts: edit .qmd-adaptive-search/local/learned-boosts.json to reduce or remove high-magnitude entries, or delete the file to reset all learned boosts.';
+    recoveryAction = 'Reset polluted learned boosts: qmd-adaptive-search maintain learned-boosts --dry-run, then qmd-adaptive-search maintain learned-boosts --yes. Prefer review --approve when only a few entries are wrong.';
   } else if (severity === 'warning') {
     message += ' Boost count is high; some entries may no longer be relevant.';
-    recoveryAction = 'Consider reviewing learned boosts for stale entries: inspect .qmd-adaptive-search/local/learned-boosts.json.';
+    recoveryAction = 'Consider resetting learned boosts: qmd-adaptive-search maintain learned-boosts --dry-run, then qmd-adaptive-search maintain learned-boosts --yes if runaway boosts persist.';
   }
 
   return {
@@ -146,10 +146,10 @@ function analyzePendingSuggestions(root: string): DiagnosisBucket {
 
   if (severity === 'critical') {
     message += ' Large backlog of unreviewed suggestions may delay ranking improvements.';
-    recoveryAction = 'Review and approve or reject pending suggestions: run qmd-adaptive-search review, then qmd-adaptive-search review --approve to promote good suggestions.';
+    recoveryAction = 'Discard stale pending suggestions: qmd-adaptive-search maintain pending-suggestions --dry-run, then qmd-adaptive-search maintain pending-suggestions --yes. Prefer review --approve when suggestions are still useful.';
   } else if (severity === 'warning') {
     message += ' Some suggestions are waiting for review.';
-    recoveryAction = 'Consider reviewing pending suggestions: run qmd-adaptive-search review.';
+    recoveryAction = 'Consider discarding stale pending suggestions: qmd-adaptive-search maintain pending-suggestions --dry-run, or review them with qmd-adaptive-search review --approve.';
   }
 
   return {

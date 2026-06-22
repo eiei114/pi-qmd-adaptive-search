@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { initProject } from '../src/config.js';
+import { runCli } from '../src/cli.js';
 import {
   countLearnedState,
   maintenancePlan,
@@ -74,6 +75,23 @@ test('maintenance plan uses diagnosis bucket vocabulary', () => {
   assert.ok(plan.dryRunCommand.includes('maintain'));
 });
 
+test('maintenance plan does not initialize project files', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qmd-maint-plan-only-'));
+  const plan = maintenancePlan(root);
+
+  assert.equal(plan.actions.length, 3);
+  assert.equal(fs.existsSync(path.join(root, '.qmd-adaptive-search')), false);
+});
+
+test('runMaintenance dry-run does not initialize project files', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qmd-maint-dry-only-'));
+  const result = runMaintenance(root, { dryRun: true });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.dryRun, true);
+  assert.equal(fs.existsSync(path.join(root, '.qmd-adaptive-search')), false);
+});
+
 test('runMaintenance requires confirmation before destructive cleanup', () => {
   const root = tempProject();
   writeLearnedAliases(root, { content: ['data'], templates: ['views'] });
@@ -84,13 +102,13 @@ test('runMaintenance requires confirmation before destructive cleanup', () => {
   assert.equal(countLearnedState(root).learnedAliases, 2);
 });
 
-test('runMaintenance skips confirmation when cleanup is non-destructive', () => {
+test('runMaintenance skips confirmation when selected cleanup is non-destructive', () => {
   const root = tempProject();
-
   const result = runMaintenance(root, { targets: ['learned-aliases'] });
+
   assert.equal(result.ok, true);
   assert.equal(result.confirmationRequired, undefined);
-  assert.equal(countLearnedState(root).learnedAliases, 0);
+  assert.equal(result.actions![0].cleared, 0);
 });
 
 test('runMaintenance dry-run does not modify learned state', () => {
@@ -151,4 +169,26 @@ test('runMaintenance with --yes on empty state is a no-op success', () => {
   const result = runMaintenance(root, { yes: true });
   assert.equal(result.ok, true);
   assert.equal(result.actions!.every((action) => action.cleared === 0), true);
+});
+
+test('CLI maintain dry-run accepts multiple positional targets', async () => {
+  const root = tempProject();
+  writeLearnedAliases(root, { content: ['data'] });
+  writeLearnedBoosts(root, { 'docs/a.md': 0.8 });
+
+  const previousCwd = process.cwd();
+  const previousLog = console.log;
+  const logs: string[] = [];
+  try {
+    process.chdir(root);
+    console.log = (value?: unknown) => logs.push(String(value));
+    await runCli(['maintain', 'learned-aliases', 'learned-boosts', '--dry-run']);
+  } finally {
+    console.log = previousLog;
+    process.chdir(previousCwd);
+  }
+
+  const payload = JSON.parse(logs.join('\n'));
+  assert.deepEqual(payload.plan.targets, ['learned-aliases', 'learned-boosts']);
+  assert.deepEqual(payload.plan.actions.map((action) => action.beforeCount), [1, 1]);
 });

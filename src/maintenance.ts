@@ -184,16 +184,6 @@ function runMaintenance(
     return { ok: true, dryRun: true, plan, before };
   }
 
-  if (!options.yes && plan.destructive) {
-    return {
-      ok: false,
-      confirmationRequired: true,
-      plan,
-      before,
-      nextCommand: plan.confirmCommand
-    };
-  }
-
   if (!plan.destructive) {
     const status = adaptiveStatus({ root });
     return {
@@ -211,6 +201,16 @@ function runMaintenance(
       })),
       status,
       diagnosis: status.diagnosis
+    };
+  }
+
+  if (!options.yes) {
+    return {
+      ok: false,
+      confirmationRequired: true,
+      plan,
+      before,
+      nextCommand: plan.confirmCommand
     };
   }
 

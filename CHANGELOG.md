@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## [1.2.0] - 2026-06-22
+
 ### Added
 
 - Maintainer cleanup workflow via `qmd-adaptive-search maintain` and `/qmd-a:maintain` / `/qmd-a:maintain-run` for resetting polluted local learned aliases, learned boosts, and stale pending suggestions without hand-editing files under `.qmd-adaptive-search/local/`.
@@ -13,6 +15,12 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Diagnosis recovery guidance now points maintainers to the maintenance workflow instead of manual JSON edits when learned state is polluted.
+
+## [1.1.3] - 2026-06-19
+
+### Changed
+
+- README release docs now describe OIDC Trusted Publishing only; removed legacy token publish fallback instructions.
 
 ## [1.1.2] - 2026-06-17
 

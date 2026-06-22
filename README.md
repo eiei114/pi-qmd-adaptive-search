@@ -768,7 +768,7 @@ Publishing to npm is automated by GitHub Actions. To publish a new version:
 2. Commit and tag the release, for example `v0.2.1`, or create a GitHub Release for that tag.
 3. The `Publish to npm` workflow runs `npm run check`, skips if that exact version already exists on npm, and runs `npm publish --access public`.
 
-The workflow supports npm trusted publishing via GitHub OIDC (see the Trusted Publishing badge). If trusted publishing is not configured on npm, add an `NPM_TOKEN` repository secret.
+Publishing uses npm [Trusted Publishing](https://docs.npmjs.com/trusted-publishers) with GitHub OIDC only (see the Trusted Publishing badge). Before the first CI publish, configure Trusted Publishing on npm for this package and repository (`eiei114/pi-qmd-adaptive-search`). The `Publish to npm` workflow requests `id-token: write`, runs `npm run check`, and publishes with `npm publish --access public`.
 
 ## Security
 

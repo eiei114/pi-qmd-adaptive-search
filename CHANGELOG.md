@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+- Add Buy Me a Coffee sponsor button to README and native GitHub funding link via `.github/FUNDING.yml`.
+
 ## [1.2.0] - 2026-06-22
 
 ### Added
@@ -155,3 +157,4 @@ CLI subcommands (`qmd-adaptive-search init`, `review --approve`, etc.) and the `
 
 - MVP does not yet perform full qmd collection setup/update/embed orchestration.
 - Background jobs are represented in status shape but not fully implemented.
+

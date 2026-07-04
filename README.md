@@ -10,6 +10,7 @@
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Status](https://img.shields.io/badge/status-MVP%200.x-orange)](#versioning-policy)
 [![GitHub](https://img.shields.io/badge/GitHub-eiei114%2Fpi--qmd--adaptive--search-blue)](https://github.com/eiei114/pi-qmd-adaptive-search)
+<a href="https://buymeacoffee.com/ekawano114m"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="217" height="60"></a>
 
 Project-local semantic file discovery for notes, docs, specs, plans, decisions, and other project files.
 

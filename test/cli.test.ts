@@ -4,7 +4,10 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { parseArgs } from '../src/cli.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /* ── parseArgs unit tests ─────────────────────────────────────────────── */
 
@@ -82,7 +85,7 @@ test('parseArgs with all CLI flags from help output', () => {
 
 /* ── CLI subprocess helpers ───────────────────────────────────────────── */
 
-const binScript = path.resolve('bin/qmd-adaptive-search.js');
+const binScript = path.resolve(__dirname, '../../bin/qmd-adaptive-search.js');
 
 function spawnCli(args: string[], options: { cwd?: string; env?: Record<string, string> } = {}) {
   const result = spawnSync(process.execPath, [binScript, ...args], {
@@ -100,7 +103,7 @@ function spawnCli(args: string[], options: { cwd?: string; env?: Record<string, 
   };
 }
 
-function tempDir(prefix) {
+function tempDir(prefix: string) {
   return fs.mkdtempSync(path.join(os.tmpdir(), `qmd-cli-${prefix}-`));
 }
 

@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 - Add Buy Me a Coffee sponsor button to README and native GitHub funding link via `.github/FUNDING.yml`.
+- Add GitHub issue templates (bug report, feature request) and pull request template linked from CONTRIBUTING.md.
 
 ## [1.2.2] - 2026-07-05
 

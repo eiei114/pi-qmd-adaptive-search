@@ -196,8 +196,10 @@ unit tests can miss — keep it green.
    ```
 5. **Update [CHANGELOG.md](CHANGELOG.md)** for user-visible changes (see
    [Changelog and versioning](#changelog-and-versioning)).
-6. **Open a pull request** against `main`. Describe what changed and why; call
-   out anything that touches the [design constraints](#conventions).
+6. **Open a pull request** against `main`. GitHub pre-fills the
+   [pull request template](.github/PULL_REQUEST_TEMPLATE.md) with the checklist
+   below. Describe what changed and why; call out anything that touches the
+   [design constraints](#conventions).
 7. **CI must pass.** The CI workflow runs `npm run check` on Node 20 and 22 and
    `npm run version:check` on pull requests. Fix CI failures before requesting
    review.
@@ -272,6 +274,10 @@ Please don't run `npm publish` or configure publish tokens. See the
 
 File bugs and feature requests in the
 [GitHub issue tracker](https://github.com/eiei114/pi-qmd-adaptive-search/issues).
+Use the [bug report](.github/ISSUE_TEMPLATE/bug_report.md) or
+[feature request](.github/ISSUE_TEMPLATE/feature_request.md) templates when
+opening a new issue — they match the fields below.
+
 Include:
 
 - What you did (exact command or Pi tool invocation).

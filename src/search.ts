@@ -158,6 +158,42 @@ function scoreFile(root, rel, terms, scopeHints, mode, boostEntries) {
   return { score: Math.max(0, score), source: Array.from(new Set(source)), why };
 }
 
+type RankedCandidate = {
+  path: string;
+  score: number;
+  source: string[];
+  why: string[];
+};
+
+/**
+ * MVP fusion step: combine qmd-ranked candidates with local lexical scores,
+ * then rerank by total score. Named for the PRD pipeline; uses additive fusion.
+ */
+function rrfFuseCandidates(
+  qmdResults: RankedCandidate[],
+  localResults: RankedCandidate[],
+  aliasWhy: string[] = []
+): RankedCandidate[] {
+  const byPath = new Map<string, RankedCandidate>();
+  for (const result of qmdResults || []) {
+    byPath.set(result.path, { ...result });
+  }
+  for (const local of localResults || []) {
+    const existing = byPath.get(local.path) || { path: local.path, score: 0, source: [], why: [] };
+    if (local.score > 0 || existing.score > 0) {
+      byPath.set(local.path, {
+        path: local.path,
+        score: existing.score + local.score,
+        source: Array.from(new Set([...(existing.source || []), ...(local.source || [])])),
+        why: [...(existing.why || []), ...aliasWhy, ...(local.why || [])]
+      });
+    }
+  }
+  return Array.from(byPath.values())
+    .filter((result) => result.score > 0)
+    .sort((a, b) => b.score - a.score);
+}
+
 function rememberSearch(root, config, record) {
   const p = paths(root);
   const now = Date.now();
@@ -189,27 +225,19 @@ function adaptiveSearch(input, options: any = {}) {
   if (!qmd.detected.available) warnings.push(installInstructions());
   else if (qmd.error) warnings.push(`qmd search failed; fallback used: ${String(qmd.error).slice(0, 240)}`);
 
-  const byPath = new Map();
+  const qmdCandidates: RankedCandidate[] = [];
   for (const result of qmd.results || []) {
-    if (fs.existsSync(path.join(root, result.path)) && shouldInclude(result.path, config)) byPath.set(result.path, result);
-  }
-  const files = walkFiles(root, config);
-  for (const rel of files) {
-    const local = scoreFile(root, rel, terms, scopeHints, mode, boostEntries);
-    const existing = byPath.get(rel) || { path: rel, score: 0, source: [], why: [] };
-    if (local.score > 0 || existing.score > 0) {
-      byPath.set(rel, {
-        path: rel,
-        score: existing.score + local.score,
-        source: Array.from(new Set([...(existing.source || []), ...local.source])),
-        why: [...(existing.why || []), ...alias.why, ...local.why]
-      });
+    if (fs.existsSync(path.join(root, result.path)) && shouldInclude(result.path, config)) {
+      qmdCandidates.push(result);
     }
   }
+  const localCandidates: RankedCandidate[] = [];
+  for (const rel of walkFiles(root, config)) {
+    const local = scoreFile(root, rel, terms, scopeHints, mode, boostEntries);
+    localCandidates.push({ path: rel, ...local });
+  }
 
-  const results = Array.from(byPath.values())
-    .filter((r) => r.score > 0)
-    .sort((a, b) => b.score - a.score)
+  const results = rrfFuseCandidates(qmdCandidates, localCandidates, alias.why)
     .slice(0, maxResults)
     .map((r) => ({
       path: r.path,
@@ -226,4 +254,4 @@ function adaptiveSearch(input, options: any = {}) {
   return { results, warnings, backgroundJobStatus };
 }
 
-export { adaptiveSearch, inferMode, tokenize, walkFiles, globToRegex };
+export { adaptiveSearch, inferMode, tokenize, walkFiles, globToRegex, scoreFile, rrfFuseCandidates };

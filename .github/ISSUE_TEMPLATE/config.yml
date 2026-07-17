@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Contributing guide
+    url: https://github.com/eiei114/pi-qmd-adaptive-search/blob/main/CONTRIBUTING.md
+    about: Setup, conventions, PR workflow, and stacked pull requests
+  - name: Security disclosures
+    url: https://github.com/eiei114/pi-qmd-adaptive-search/blob/main/SECURITY.md
+    about: Report vulnerabilities privately — do not open a public issue

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 ## Unreleased
 
 - Add Buy Me a Coffee sponsor button to README and native GitHub funding link via `.github/FUNDING.yml`.
+- Add GitHub issue templates (bug report, feature request) and pull request template linked from CONTRIBUTING.md.
+
+## [1.2.2] - 2026-07-05
+
+### Added
+
+- Add CODE_OF_CONDUCT.md (Contributor Covenant v2.0) for OSS contributor standards.
+- Add Dependabot configuration (`.github/dependabot.yml`) for automated npm and GitHub Actions dependency updates.
+
+### Changed
+
+- Update `@types/node` devDependency from `^25.9.1` to `^25.9.4`.
 
 ## [1.2.0] - 2026-06-22
 

@@ -9,6 +9,7 @@ import { qmdOperationPlan, runQmdOperation } from './qmd-operations.js';
 import { maintenancePlan, runMaintenance } from './maintenance.js';
 import { loadConfig } from './config.js';
 import { spawnSync } from 'node:child_process';
+import { packageVersion } from './package-version.js';
 
 function parseArgs(argv) {
   const out: any = { _: [] };
@@ -29,8 +30,8 @@ function printJson(value) {
   console.log(JSON.stringify(value, null, 2));
 }
 
-function help() {
-  console.log(`qmd-adaptive-search 0.1.0
+function helpText() {
+  return `qmd-adaptive-search ${packageVersion()}
 
 Usage:
   qmd-adaptive-search search <query> [--mode auto|precision|recall|article|project] [--scope <path>] [--max 10]
@@ -45,7 +46,11 @@ Usage:
 
 MCP-style tool names:
   qmd_adaptive_search, qmd_search_feedback, qmd_adaptive_status
-`);
+`;
+}
+
+function help() {
+  console.log(helpText());
 }
 
 async function confirm(message) {
@@ -120,4 +125,4 @@ async function runCli(argv) {
   throw new Error(`Unknown command: ${command}`);
 }
 
-export { runCli, parseArgs };
+export { runCli, parseArgs, help, helpText };

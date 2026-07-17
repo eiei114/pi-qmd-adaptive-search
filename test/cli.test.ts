@@ -5,7 +5,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseArgs } from '../src/cli.js';
+import { parseArgs, helpText } from '../src/cli.js';
+import { packageVersion } from '../src/package-version.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -141,6 +142,22 @@ test('CLI help output includes MCP-style tool names', () => {
   assert.match(stdout, /qmd_adaptive_search/);
   assert.match(stdout, /qmd_search_feedback/);
   assert.match(stdout, /qmd_adaptive_status/);
+});
+
+
+test('CLI help reports package.json version', () => {
+  const version = packageVersion();
+  const help = helpText();
+  assert.ok(help.startsWith(`qmd-adaptive-search ${version}`));
+  assert.ok(!help.includes('qmd-adaptive-search 0.1.0'));
+});
+
+test('CLI --help subprocess reports package.json version', () => {
+  const version = packageVersion();
+  const { stdout, status } = spawnCli(['--help']);
+  assert.equal(status, 0);
+  assert.ok(stdout.startsWith(`qmd-adaptive-search ${version}`));
+  assert.ok(!stdout.includes('qmd-adaptive-search 0.1.0'));
 });
 
 /* ── Non-zero exit paths ──────────────────────────────────────────────── */

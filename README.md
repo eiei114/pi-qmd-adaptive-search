@@ -100,7 +100,7 @@ npm install -g pi-qmd-adaptive-search
 From source:
 
 ```bash
-git clone <repo-url> pi-qmd-adaptive-search
+git clone https://github.com/eiei114/pi-qmd-adaptive-search.git
 cd pi-qmd-adaptive-search
 npm test
 npm link

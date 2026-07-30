@@ -309,6 +309,7 @@ qmd-adaptive-search status
 qmd-adaptive-search configure --preset docs|mixed|code|privacy [--reset]
 qmd-adaptive-search review [--approve]
 qmd-adaptive-search install-qmd [--manager bun|npm|pnpm|yarn] [--yes]
+qmd-adaptive-search install-instructions
 qmd-adaptive-search qmd setup|update|embed [--dry-run] [--yes]
 qmd-adaptive-search maintain [learned-aliases|learned-boosts|pending-suggestions|all ...] [--dry-run] [--yes]
 ```

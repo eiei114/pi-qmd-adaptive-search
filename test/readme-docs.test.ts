@@ -17,3 +17,17 @@ test('README install-from-source uses the GitHub repository URL', () => {
     'README clone instructions should match package.json repository.url',
   );
 });
+
+test('README CLI section documents install-instructions referenced in troubleshooting', () => {
+  const readme = fs.readFileSync(path.join(repoRoot, 'README.md'), 'utf8');
+
+  assert.match(readme, /qmd-adaptive-search install-instructions/, 'troubleshooting should reference install-instructions');
+
+  const cliSection = readme.match(/## CLI[\s\S]*?## Examples/);
+  assert.ok(cliSection, 'README should include a CLI section');
+  assert.match(
+    cliSection![0],
+    /qmd-adaptive-search install-instructions/,
+    'README CLI section should list install-instructions',
+  );
+});

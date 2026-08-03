@@ -1,5 +1,7 @@
 # pi-qmd-adaptive-search
 
+[![Join dotfield.xyz on Discord](https://img.shields.io/badge/Join%20dotfield.xyz%20on%20Discord-5865F2?logo=discord&logoColor=white)](https://discord.gg/4945dXZVW5)
+
 [![npm version](https://img.shields.io/npm/v/pi-qmd-adaptive-search?color=cb3837&label=npm)](https://www.npmjs.com/package/pi-qmd-adaptive-search)
 [![npm downloads](https://img.shields.io/npm/dm/pi-qmd-adaptive-search)](https://www.npmjs.com/package/pi-qmd-adaptive-search)
 [![CI](https://github.com/eiei114/pi-qmd-adaptive-search/actions/workflows/ci.yml/badge.svg)](https://github.com/eiei114/pi-qmd-adaptive-search/actions/workflows/ci.yml)

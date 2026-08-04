@@ -122,6 +122,7 @@ test('CLI --help prints usage information', () => {
   assert.match(stdout, /configure/);
   assert.match(stdout, /maintain/);
   assert.match(stdout, /install-qmd/);
+  assert.match(stdout, /install-instructions/);
 });
 
 test('CLI help command prints usage information', () => {
@@ -158,6 +159,13 @@ test('CLI --help subprocess reports package.json version', () => {
   assert.equal(status, 0);
   assert.ok(stdout.startsWith(`qmd-adaptive-search ${version}`));
   assert.ok(!stdout.includes('qmd-adaptive-search 0.1.0'));
+});
+
+test('CLI install-instructions prints qmd install guidance', () => {
+  const { stdout, status } = spawnCli(['install-instructions']);
+  assert.equal(status, 0);
+  assert.match(stdout, /qmd was not found|Install options:/);
+  assert.match(stdout, /@tobilu\/qmd/);
 });
 
 /* ── Non-zero exit paths ──────────────────────────────────────────────── */

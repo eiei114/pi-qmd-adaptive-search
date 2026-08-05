@@ -21,7 +21,15 @@ test('README install-from-source uses the GitHub repository URL', () => {
 test('README CLI section documents install-instructions referenced in troubleshooting', () => {
   const readme = fs.readFileSync(path.join(repoRoot, 'README.md'), 'utf8');
 
-  assert.match(readme, /qmd-adaptive-search install-instructions/, 'troubleshooting should reference install-instructions');
+  const troubleshootingSection = readme.match(
+    /### `qmd was not found`[\s\S]*?(?=\n### |\n## |$)/,
+  );
+  assert.ok(troubleshootingSection, 'README should include the troubleshooting section');
+  assert.match(
+    troubleshootingSection[0],
+    /qmd-adaptive-search install-instructions/,
+    'troubleshooting should reference install-instructions',
+  );
 
   const cliSection = readme.match(/## CLI[\s\S]*?## Examples/);
   assert.ok(cliSection, 'README should include a CLI section');

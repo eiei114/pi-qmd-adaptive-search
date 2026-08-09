@@ -65,6 +65,8 @@ function initProject(root = process.cwd(), options = {}) {
 function loadConfig(root = process.cwd(), options = {}) {
     const p = paths(root);
     if (!fs.existsSync(p.config)) {
+        if (options.readOnly === true)
+            return deepMerge(DEFAULT_CONFIG, {});
         if (options.autoInit === false)
             throw new Error(`qmd-adaptive-search config not found at ${p.config}`);
         initProject(root);

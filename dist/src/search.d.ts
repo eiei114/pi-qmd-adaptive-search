@@ -37,5 +37,6 @@ declare function adaptiveSearch(input: any, options?: any): {
         qmdFallbackUsed: boolean;
         qmdAvailable: any;
     };
+    readOnly: boolean;
 };
 export { adaptiveSearch, inferMode, tokenize, walkFiles, globToRegex, scoreFile, rrfFuseCandidates };

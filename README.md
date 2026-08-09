@@ -57,6 +57,7 @@ meaning/intent     -> qmd-adaptive-search
 - Local feedback learning via `feedback`.
 - Shared aliases/boosts through explicit review.
 - Privacy-first storage: raw queries are not persisted.
+- Side-effect-free `--read-only` search for callers that must not mutate adaptive state.
 - Safe Pi tool output: compact path-first results; snippets omitted by default.
 
 ## Install
@@ -125,6 +126,18 @@ In a project repo:
 ```bash
 qmd-adaptive-search search "where is the product spec?"
 ```
+
+For evidence compilation, CI, or other callers that must not create or update
+`.qmd-adaptive-search/` state:
+
+```bash
+qmd-adaptive-search search "where was this decided?" --mode recall --read-only
+```
+
+Read-only search still consumes existing config, shared aliases/boosts, and local
+learned aliases/boosts when present. It does not initialize the project, update
+`.gitignore`, record job state, or write recent-search anchors. The JSON response
+includes `"readOnly": true` so callers can fail closed when the flag is not honored.
 
 First run creates:
 
@@ -305,7 +318,7 @@ These commands are the scriptable CLI surface. In Pi TUI, prefer the `qmd-a:*` s
 
 ```text
 qmd-adaptive-search init
-qmd-adaptive-search search <query> [--mode auto|precision|recall|article|project] [--scope <path>] [--max 10]
+qmd-adaptive-search search <query> [--mode auto|precision|recall|article|project] [--scope <path>] [--max 10] [--read-only]
 qmd-adaptive-search feedback --selected <path[,path]> [--rating good|bad] [--force]
 qmd-adaptive-search status
 qmd-adaptive-search configure --preset docs|mixed|code|privacy [--reset]

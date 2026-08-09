@@ -36,7 +36,7 @@ function helpText() {
     return `qmd-adaptive-search ${packageVersion()}
 
 Usage:
-  qmd-adaptive-search search <query> [--mode auto|precision|recall|article|project] [--scope <path>] [--max 10]
+  qmd-adaptive-search search <query> [--mode auto|precision|recall|article|project] [--scope <path>] [--max 10] [--read-only]
   qmd-adaptive-search feedback --selected <path[,path]> [--rating good|bad] [--force]
   qmd-adaptive-search status
   qmd-adaptive-search init
@@ -96,7 +96,7 @@ async function runCli(argv) {
         const query = args.query || args._.slice(1).join(' ');
         if (!query)
             throw new Error('query is required');
-        return printJson(adaptiveSearch({ query, mode: args.mode || 'auto', scopeHint: args.scope, maxResults: args.max ? Number(args.max) : undefined }));
+        return printJson(adaptiveSearch({ query, mode: args.mode || 'auto', scopeHint: args.scope, maxResults: args.max ? Number(args.max) : undefined }, { readOnly: !!args['read-only'] }));
     }
     if (command === 'feedback' || command === 'qmd_search_feedback') {
         const selected = args.selected || args.selectedPath || args.selectedPaths || args._[1];

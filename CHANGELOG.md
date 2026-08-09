@@ -4,9 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
-### Changed
+## [1.3.0] - 2026-08-09
 
-- Bump package version to `1.2.2` for the next patch release.
+### Added
+
+- Add side-effect-free `search --read-only` for evidence compilers and CI callers.
+- Read-only search consumes existing adaptive aliases and boosts without creating
+  config, changing `.gitignore`, recording qmd jobs, or storing recent-search anchors.
+
+### Changed
 
 - Add Buy Me a Coffee sponsor button to README and native GitHub funding link via `.github/FUNDING.yml`.
 - Add GitHub issue templates (bug report, feature request) and pull request template linked from CONTRIBUTING.md.
@@ -179,4 +185,3 @@ CLI subcommands (`qmd-adaptive-search init`, `review --approve`, etc.) and the `
 
 - MVP does not yet perform full qmd collection setup/update/embed orchestration.
 - Background jobs are represented in status shape but not fully implemented.
-

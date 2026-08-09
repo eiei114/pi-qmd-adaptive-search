@@ -82,6 +82,20 @@ function readAllFiles(root) {
     walk(root);
     return values.join('\n');
 }
+function fileMtimes(root) {
+    const values = {};
+    function walk(dir) {
+        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+            const abs = path.join(dir, entry.name);
+            if (entry.isDirectory())
+                walk(abs);
+            else
+                values[path.relative(root, abs)] = fs.statSync(abs).mtimeMs;
+        }
+    }
+    walk(root);
+    return values;
+}
 test('search creates lightweight config and returns fallback result', () => {
     const root = tempProject();
     initProject(root);
@@ -130,6 +144,40 @@ test('privacy store excludes exact raw query and query hash', () => {
     const queryHash = createHash('sha256').update(query).digest('hex');
     assert.equal(stored.includes(query), false);
     assert.equal(stored.includes(queryHash), false);
+});
+test('read-only search does not initialize or mutate project state', () => {
+    const root = tempProject();
+    const pathKey = Object.keys(process.env).find((key) => key.toLowerCase() === 'path') || 'PATH';
+    const oldPath = process.env[pathKey];
+    process.env[pathKey] = '';
+    try {
+        const result = adaptiveSearch({ query: 'product decisions', maxResults: 5 }, { root, readOnly: true });
+        assert.equal(result.readOnly, true);
+        assert.equal(result.results[0].path, 'docs/ProductSpec.md');
+        assert.equal(fs.existsSync(path.join(root, '.qmd-adaptive-search')), false);
+    }
+    finally {
+        if (oldPath === undefined)
+            delete process.env[pathKey];
+        else
+            process.env[pathKey] = oldPath;
+    }
+});
+test('read-only search leaves existing adaptive state byte-for-byte unchanged', () => {
+    const root = tempProject();
+    configureFakeQmd(root, {
+        searchStdout: 'docs/ProductSpec.md:1 Product Spec'
+    });
+    writeLearnedAliases(root, { product: ['workout'] });
+    writeLearnedBoosts(root, { 'docs/ProductSpec.md': 0.2 });
+    const stateRoot = path.join(root, '.qmd-adaptive-search');
+    const before = readAllFiles(stateRoot);
+    const beforeMtimes = fileMtimes(stateRoot);
+    const result = adaptiveSearch({ query: 'product decisions', maxResults: 5 }, { root, readOnly: true });
+    assert.equal(result.readOnly, true);
+    assert.equal(result.results[0].path, 'docs/ProductSpec.md');
+    assert.equal(readAllFiles(stateRoot), before);
+    assert.deepEqual(fileMtimes(stateRoot), beforeMtimes);
 });
 test('status reports core counts', () => {
     const root = tempProject();

@@ -143,6 +143,23 @@ test('CLI help output includes MCP-style tool names', () => {
   assert.match(stdout, /qmd_adaptive_search/);
   assert.match(stdout, /qmd_search_feedback/);
   assert.match(stdout, /qmd_adaptive_status/);
+  assert.match(stdout, /--read-only/);
+});
+
+test('CLI search --read-only returns results without creating adaptive state', () => {
+  const root = tempDir('read-only-search');
+  fs.mkdirSync(path.join(root, 'docs'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'docs', 'Decision.md'), '# Decision\nPortable evidence compiler.\n', 'utf8');
+  const emptyBin = tempDir('read-only-path');
+  const { stdout, status } = spawnCli(
+    ['search', 'portable evidence', '--read-only', '--max', '5'],
+    { cwd: root, env: { PATH: emptyBin, Path: emptyBin } }
+  );
+  assert.equal(status, 0);
+  const payload = JSON.parse(stdout);
+  assert.equal(payload.readOnly, true);
+  assert.equal(payload.results[0].path, 'docs/Decision.md');
+  assert.equal(fs.existsSync(path.join(root, '.qmd-adaptive-search')), false);
 });
 
 

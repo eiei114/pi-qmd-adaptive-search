@@ -207,8 +207,9 @@ function rememberSearch(root, config, record) {
 
 function adaptiveSearch(input, options: any = {}) {
   const root = options.root || process.cwd();
-  initProject(root);
-  const config = loadConfig(root);
+  const readOnly = options.readOnly === true;
+  if (!readOnly) initProject(root);
+  const config = loadConfig(root, { readOnly });
   const warnings = [];
   const maxResults = Math.min(Number(input.maxResults || config.search.defaultMaxResults || 10), Number(config.search.hardMaxResults || 30));
   const mode = inferMode(input.query, input.mode || config.search.defaultModeBias || 'auto');
@@ -219,9 +220,9 @@ function adaptiveSearch(input, options: any = {}) {
   const boostEntries = loadBoosts(root);
 
   const useQueryFallback = config.search?.qmdQueryFallback === true || ['article', 'project', 'recall'].includes(mode);
-  const qmdJob = startQmdSearchJob(root, { mode, maxResults, scopeHints });
+  const qmdJob = readOnly ? null : startQmdSearchJob(root, { mode, maxResults, scopeHints });
   const qmd = qmdSearch(input.query, maxResults, config, root, { useQueryFallback });
-  finishQmdSearchJob(root, qmdJob, qmd);
+  if (qmdJob) finishQmdSearchJob(root, qmdJob, qmd);
   if (!qmd.detected.available) warnings.push(installInstructions());
   else if (qmd.error) warnings.push(`qmd search failed; fallback used: ${String(qmd.error).slice(0, 240)}`);
 
@@ -249,9 +250,9 @@ function adaptiveSearch(input, options: any = {}) {
       highlights: highlights(root, r.path, terms, config.search.maxHighlightsPerResult || 2, config.search.maxHighlightChars || 240)
     }));
 
-  rememberSearch(root, config, { mode, resultPaths: results.map((r) => r.path), anchors: queryTerms });
+  if (!readOnly) rememberSearch(root, config, { mode, resultPaths: results.map((r) => r.path), anchors: queryTerms });
   const backgroundJobStatus = backgroundJobStatusSummary(readJobState(root));
-  return { results, warnings, backgroundJobStatus };
+  return { results, warnings, backgroundJobStatus, readOnly };
 }
 
 export { adaptiveSearch, inferMode, tokenize, walkFiles, globToRegex, scoreFile, rrfFuseCandidates };

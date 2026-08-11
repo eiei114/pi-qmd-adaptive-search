@@ -774,8 +774,12 @@ Commands:
 npm test
 npm run smoke
 npm run build
+npm run check
+npm run ci
 node bin/qmd-adaptive-search.js search "product decisions" --max 3
 ```
+
+`npm run check` runs the full local gate (`npm test`, smoke, and `npm pack --dry-run`). `npm run ci` adds `npm run version:check` and is the closest equivalent to the GitHub Actions workflow on pull requests.
 
 ## Release
 

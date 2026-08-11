@@ -18,6 +18,23 @@ test('README install-from-source uses the GitHub repository URL', () => {
   );
 });
 
+test('README Development section documents local CI validation commands', () => {
+  const readme = fs.readFileSync(path.join(repoRoot, 'README.md'), 'utf8');
+
+  const developmentSection = readme.match(/## Development[\s\S]*?(?=\n## |$)/);
+  assert.ok(developmentSection, 'README should include a Development section');
+  assert.match(
+    developmentSection![0],
+    /npm run check/,
+    'Development should document npm run check as the local validation gate',
+  );
+  assert.match(
+    developmentSection![0],
+    /npm run ci/,
+    'Development should document npm run ci as the closest CI equivalent',
+  );
+});
+
 test('README CLI section documents install-instructions referenced in troubleshooting', () => {
   const readme = fs.readFileSync(path.join(repoRoot, 'README.md'), 'utf8');
 

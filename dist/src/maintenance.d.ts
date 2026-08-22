@@ -1,7 +1,7 @@
 import { diagnoseSearchQuality } from './diagnosis.js';
 import { adaptiveStatus } from './status.js';
 /** Local learned-state targets aligned with diagnosis bucket vocabulary. */
-export declare const MAINTENANCE_TARGETS: readonly ["learned-aliases", "learned-boosts", "pending-suggestions"];
+export declare const MAINTENANCE_TARGETS: readonly ['learned-aliases', 'learned-boosts', 'pending-suggestions'];
 export type MaintenanceTarget = (typeof MAINTENANCE_TARGETS)[number];
 export interface LearnedStateCounts {
     learnedAliases: number;

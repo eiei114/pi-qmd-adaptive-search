@@ -28,13 +28,14 @@ declare function runQmdOperation(operation: any, options?: any, runtime?: any): 
         warnings: string[];
     };
     confirmationRequired?: undefined;
-    nextCommand?: undefined;
     error?: undefined;
     humanMessage?: undefined;
+    nextCommand?: undefined;
     status?: undefined;
     stdout?: undefined;
     stderr?: undefined;
 } | {
+    dryRun?: undefined;
     ok: boolean;
     confirmationRequired: boolean;
     plan: {
@@ -51,13 +52,14 @@ declare function runQmdOperation(operation: any, options?: any, runtime?: any): 
         warnings: string[];
     };
     nextCommand: string;
-    dryRun?: undefined;
     error?: undefined;
     humanMessage?: undefined;
     status?: undefined;
     stdout?: undefined;
     stderr?: undefined;
 } | {
+    dryRun?: undefined;
+    confirmationRequired?: undefined;
     ok: boolean;
     plan: {
         operation: any;
@@ -75,12 +77,12 @@ declare function runQmdOperation(operation: any, options?: any, runtime?: any): 
     error: string;
     humanMessage: string;
     nextCommand: string;
-    dryRun?: undefined;
-    confirmationRequired?: undefined;
     status?: undefined;
     stdout?: undefined;
     stderr?: undefined;
 } | {
+    dryRun?: undefined;
+    confirmationRequired?: undefined;
     ok: boolean;
     plan: {
         operation: any;
@@ -101,9 +103,12 @@ declare function runQmdOperation(operation: any, options?: any, runtime?: any): 
     error: any;
     humanMessage: string;
     nextCommand: string;
+} | {
     dryRun?: undefined;
     confirmationRequired?: undefined;
-} | {
+    error?: undefined;
+    humanMessage?: undefined;
+    nextCommand?: undefined;
     ok: boolean;
     plan: {
         operation: any;
@@ -121,11 +126,6 @@ declare function runQmdOperation(operation: any, options?: any, runtime?: any): 
     status: any;
     stdout: any;
     stderr: any;
-    dryRun?: undefined;
-    confirmationRequired?: undefined;
-    nextCommand?: undefined;
-    error?: undefined;
-    humanMessage?: undefined;
 };
 declare function nextQmdOperation(root: any, config: any, qmd: any, jobState: any): {
     operation: string;

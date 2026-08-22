@@ -5,10 +5,10 @@ declare function detectQmd(config: any, root?: string): {
     statusText: any;
     errors?: undefined;
 } | {
+    statusText?: undefined;
     available: boolean;
     command: any;
     errors: any[];
-    statusText?: undefined;
 };
 declare function parseQmdSearchOutput(output: any, root: any): any[];
 declare function qmdSearch(query: any, maxResults: any, config: any, root?: string, options?: any): {
@@ -18,15 +18,15 @@ declare function qmdSearch(query: any, maxResults: any, config: any, root?: stri
         statusText: any;
         errors?: undefined;
     } | {
+        statusText?: undefined;
         available: boolean;
         command: any;
         errors: any[];
-        statusText?: undefined;
     };
     results: any[];
     error: string;
-    method?: undefined;
     raw?: undefined;
+    method?: undefined;
 } | {
     detected: {
         available: boolean;
@@ -34,10 +34,10 @@ declare function qmdSearch(query: any, maxResults: any, config: any, root?: stri
         statusText: any;
         errors?: undefined;
     } | {
+        statusText?: undefined;
         available: boolean;
         command: any;
         errors: any[];
-        statusText?: undefined;
     };
     results: any[];
     error: any;
@@ -50,10 +50,10 @@ declare function qmdSearch(query: any, maxResults: any, config: any, root?: stri
         statusText: any;
         errors?: undefined;
     } | {
+        statusText?: undefined;
         available: boolean;
         command: any;
         errors: any[];
-        statusText?: undefined;
     };
     results: any[];
     raw: any;
@@ -66,10 +66,10 @@ declare function qmdSearch(query: any, maxResults: any, config: any, root?: stri
         statusText: any;
         errors?: undefined;
     } | {
+        statusText?: undefined;
         available: boolean;
         command: any;
         errors: any[];
-        statusText?: undefined;
     };
     results: any[];
     error: any;

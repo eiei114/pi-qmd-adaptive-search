@@ -5,11 +5,11 @@ declare function recordFeedback(input: any, options?: any): {
     selectedPaths?: undefined;
     anchors?: undefined;
 } | {
+    rejected?: undefined;
     ok: boolean;
     selectedPaths: unknown[];
     anchors: any;
     warnings: any[];
-    rejected?: undefined;
 };
 declare function reviewSuggestions(options?: any): {
     count: number;

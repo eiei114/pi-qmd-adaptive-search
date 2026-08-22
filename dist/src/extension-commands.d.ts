@@ -15,6 +15,6 @@ export interface ExtensionAPILike {
     registerCommand(name: string, options: ExtensionCommandRegistration): void;
     registerTool(definition: unknown): void;
 }
-export declare const QMD_A_COLON_COMMANDS: readonly ["qmd-a:init", "qmd-a:status", "qmd-a:review", "qmd-a:approve", "qmd-a:configure", "qmd-a:install", "qmd-a:setup", "qmd-a:setup-run", "qmd-a:update", "qmd-a:update-run", "qmd-a:embed", "qmd-a:embed-run", "qmd-a:maintain", "qmd-a:maintain-run"];
+export declare const QMD_A_COLON_COMMANDS: readonly ['qmd-a:init', 'qmd-a:status', 'qmd-a:review', 'qmd-a:approve', 'qmd-a:configure', 'qmd-a:install', 'qmd-a:setup', 'qmd-a:setup-run', 'qmd-a:update', 'qmd-a:update-run', 'qmd-a:embed', 'qmd-a:embed-run', 'qmd-a:maintain', 'qmd-a:maintain-run'];
 export declare function registerQmdAdaptiveTools(pi: ExtensionAPILike): void;
 export declare function registerQmdAdaptiveCommands(pi: ExtensionAPILike): void;

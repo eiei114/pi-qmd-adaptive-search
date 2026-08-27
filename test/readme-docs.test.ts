@@ -35,6 +35,47 @@ test('README Development section documents local CI validation commands', () => 
   );
 });
 
+test('README versioning policy matches the current package major line', () => {
+  const readme = fs.readFileSync(path.join(repoRoot, 'README.md'), 'utf8');
+  const pkg = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
+  const [major] = pkg.version.split('.').map(Number);
+
+  assert.ok(Number.isInteger(major) && major >= 1, 'package major must be a valid stable major');
+  assert.match(
+    readme,
+    new RegExp(`Release line: .*${major}\\.x`),
+    'README release line must match package major',
+  );
+  assert.match(
+    readme,
+    new RegExp(`status-${major}\\.x`),
+    'README status badge must match package major',
+  );
+  assert.doesNotMatch(
+    readme,
+    /Initial version: `0\.1\.0`/,
+    'README must not describe the project as pre-1.0 MVP',
+  );
+  assert.doesNotMatch(
+    readme,
+    /status-MVP%200\.x/,
+    'README status badge must not claim MVP 0.x after 1.x release',
+  );
+
+  const versioningSection = readme.match(/## Versioning policy[\s\S]*?(?=\n## |$)/);
+  assert.ok(versioningSection, 'README should include a Versioning policy section');
+  assert.match(
+    versioningSection![0],
+    /1\.0\.0 = stable schemas/,
+    'Versioning policy should document the 1.0.0 stable baseline',
+  );
+  assert.match(
+    versioningSection![0],
+    /2\.0\.0 = breaking config\/schema\/API changes/,
+    'Versioning policy should document the next major bump line',
+  );
+});
+
 test('README CLI section documents install-instructions referenced in troubleshooting', () => {
   const readme = fs.readFileSync(path.join(repoRoot, 'README.md'), 'utf8');
 

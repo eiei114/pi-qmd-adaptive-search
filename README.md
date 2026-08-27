@@ -10,7 +10,7 @@
 [![Pi package](https://img.shields.io/badge/pi-package-purple)](#pi-installation)
 [![Trusted Publishing](https://img.shields.io/badge/Trusted%20Publishing-GitHub%20OIDC-4c1)](#release)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Status](https://img.shields.io/badge/status-MVP%200.x-orange)](#versioning-policy)
+[![Status](https://img.shields.io/badge/status-1.x-blue)](#versioning-policy)
 [![GitHub](https://img.shields.io/badge/GitHub-eiei114%2Fpi--qmd--adaptive--search-blue)](https://github.com/eiei114/pi-qmd-adaptive-search)
 <a href="https://buymeacoffee.com/ekawano114m"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="217" height="60"></a>
 
@@ -20,7 +20,7 @@ Project-local semantic file discovery for notes, docs, specs, plans, decisions, 
 
 `pi-qmd-adaptive-search` is a Pi package and CLI. It uses [`qmd`](https://github.com/tobilu/qmd) when available, then improves results with query expansion, aliases, learned path boosts, scope hints, and filename/content fallback. It is designed for vague searches such as “where did we decide this?”, “related notes”, or “the spec about export”.
 
-> Initial version: `0.1.0`. Usable MVP, not stable 1.0. Breaking changes may occur during `0.x`.
+> Release line: `1.x` (semver from 1.0.0). Patch and minor releases stay backward compatible; breaking changes ship in the next major version.
 
 ## When to use
 
@@ -798,11 +798,10 @@ Please report vulnerabilities via [SECURITY.md](SECURITY.md). Avoid filing sensi
 ## Versioning policy
 
 ```text
-0.1.0 = usable MVP, not stable 1.0
-0.1.x = bugfix/docs/small safe improvements
-0.2.0 = config/schema changes or new command/tool
-0.3.0+ = ranking/learning/setup UX changes
 1.0.0 = stable schemas, config format, qmd setup UX, and migration story
+1.x.y = bugfix/docs/small safe improvements (patch)
+1.y.0 = new command/tool or non-breaking feature (minor)
+2.0.0 = breaking config/schema/API changes (major)
 ```
 
 ## Roadmap

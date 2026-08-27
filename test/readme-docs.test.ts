@@ -40,7 +40,17 @@ test('README versioning policy matches the current package major line', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
   const [major] = pkg.version.split('.').map(Number);
 
-  assert.ok(major >= 1, 'this regression test assumes the package has reached 1.x');
+  assert.ok(Number.isInteger(major) && major >= 1, 'package major must be a valid stable major');
+  assert.match(
+    readme,
+    new RegExp(`Release line: .*${major}\\.x`),
+    'README release line must match package major',
+  );
+  assert.match(
+    readme,
+    new RegExp(`status-${major}\\.x`),
+    'README status badge must match package major',
+  );
   assert.doesNotMatch(
     readme,
     /Initial version: `0\.1\.0`/,

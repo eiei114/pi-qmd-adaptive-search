@@ -76,6 +76,25 @@ test('README versioning policy matches the current package major line', () => {
   );
 });
 
+test('README Library API uses ESM import for type module package', () => {
+  const readme = fs.readFileSync(path.join(repoRoot, 'README.md'), 'utf8');
+  const pkg = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
+
+  assert.equal(pkg.type, 'module', 'package.json must declare type module');
+  const librarySection = readme.match(/## Library API[\s\S]*?(?=\n## |$)/);
+  assert.ok(librarySection, 'README should include a Library API section');
+  assert.doesNotMatch(
+    librarySection![0],
+    /require\(['"]pi-qmd-adaptive-search['"]\)/,
+    'Library API must not use CommonJS require for an ESM package',
+  );
+  assert.match(
+    librarySection![0],
+    /from ['"]pi-qmd-adaptive-search['"]/,
+    'Library API should document ESM import syntax',
+  );
+});
+
 test('README CLI section documents install-instructions referenced in troubleshooting', () => {
   const readme = fs.readFileSync(path.join(repoRoot, 'README.md'), 'utf8');
 

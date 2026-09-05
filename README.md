@@ -681,13 +681,13 @@ The CLI prints full search JSON for local use, including bounded `lead` / `highl
 ## Library API
 
 ```js
-const {
+import {
   adaptiveSearch,
   recordFeedback,
   adaptiveStatus,
   maintenancePlan,
   runMaintenance
-} = require('pi-qmd-adaptive-search');
+} from 'pi-qmd-adaptive-search';
 
 const found = adaptiveSearch({
   query: 'workout product decisions',

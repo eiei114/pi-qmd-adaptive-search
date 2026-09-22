@@ -1,7 +1,7 @@
 declare function tokenize(value: any): string[];
 declare function inferMode(query: any, requested?: string): string;
 declare function globToRegex(glob: any): RegExp;
-declare function walkFiles(root: any, config: any, dir?: any, output?: any[]): any[];
+declare function walkFiles(root: any, config: any): any[];
 declare function scoreFile(root: any, rel: any, terms: any, scopeHints: any, mode: any, boostEntries: any): {
     score: number;
     source: any[];

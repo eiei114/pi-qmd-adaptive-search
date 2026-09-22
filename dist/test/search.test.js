@@ -6,6 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { adaptiveSearch, recordFeedback, reviewSuggestions, approveSuggestions, adaptiveStatus, initProject, qmdOperationPlan, runQmdOperation } from '../src/index.js';
 import { detectQmd, parseQmdSearchOutput } from '../src/qmd.js';
+import { walkFiles } from '../src/fs-utils.js';
 function tempProject() {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'qmd-adaptive-'));
     fs.mkdirSync(path.join(root, 'docs'), { recursive: true });
@@ -96,6 +97,15 @@ function fileMtimes(root) {
     walk(root);
     return values;
 }
+test('shared project walker excludes VCS and dependency trees while preserving relative paths', () => {
+    const root = tempProject();
+    fs.mkdirSync(path.join(root, 'node_modules', 'ignored'), { recursive: true });
+    fs.mkdirSync(path.join(root, '.git', 'ignored'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'docs', 'nested.txt'), 'nested', 'utf8');
+    fs.writeFileSync(path.join(root, 'node_modules', 'ignored', 'package.json'), '{}', 'utf8');
+    fs.writeFileSync(path.join(root, '.git', 'ignored', 'state'), 'state', 'utf8');
+    assert.deepEqual(walkFiles(root).sort(), ['README.md', 'docs/ProductSpec.md', 'docs/nested.txt']);
+});
 test('search creates lightweight config and returns fallback result', () => {
     const root = tempProject();
     initProject(root);

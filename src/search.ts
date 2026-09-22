@@ -3,7 +3,7 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { initProject, loadConfig, paths } from './config.js';
 import { qmdSearch, installInstructions } from './qmd.js';
-import { readJson, writeJson, toPosix } from './fs-utils.js';
+import { readJson, writeJson, toPosix, walkFiles as walkProjectFiles } from './fs-utils.js';
 import { backgroundJobStatusSummary, finishQmdSearchJob, readJobState, startQmdSearchJob } from './job-state.js';
 import { expandAliasTerms, effectiveBoostValue } from './ranking-guardrails.js';
 
@@ -56,15 +56,8 @@ function shouldInclude(rel, config) {
   return TEXT_EXTS.has(path.extname(posix).toLowerCase());
 }
 
-function walkFiles(root, config, dir = root, output = []) {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const abs = path.join(dir, entry.name);
-    const rel = toPosix(path.relative(root, abs));
-    if (rel.startsWith('.git/') || rel.includes('/node_modules/')) continue;
-    if (entry.isDirectory()) walkFiles(root, config, abs, output);
-    else if (entry.isFile() && shouldInclude(rel, config)) output.push(rel);
-  }
-  return output;
+function walkFiles(root, config) {
+  return walkProjectFiles(root, (rel) => shouldInclude(rel, config));
 }
 
 function readLead(root, rel, maxChars) {

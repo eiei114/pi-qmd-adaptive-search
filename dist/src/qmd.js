@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs';
-import { toPosix } from './fs-utils.js';
+import { toPosix, walkFiles } from './fs-utils.js';
 function commandCandidates(config) {
     const candidates = [];
     if (Array.isArray(config.qmdCommand) && config.qmdCommand.length > 0)
@@ -53,26 +53,6 @@ function canonicalPathKey(value) {
         .replace(/[\s_]+/g, '-')
         .replace(/-+/g, '-');
 }
-function collectFiles(root, dir = root, output = []) {
-    let entries = [];
-    try {
-        entries = fs.readdirSync(dir, { withFileTypes: true });
-    }
-    catch {
-        return output;
-    }
-    for (const entry of entries) {
-        const abs = path.join(dir, entry.name);
-        const rel = toPosix(path.relative(root, abs));
-        if (rel === '.git' || rel.startsWith('.git/') || rel === 'node_modules' || rel.includes('/node_modules/'))
-            continue;
-        if (entry.isDirectory())
-            collectFiles(root, abs, output);
-        else if (entry.isFile())
-            output.push(rel);
-    }
-    return output;
-}
 function createPathResolver(root) {
     const byCanonical = new Map();
     return function resolve(raw) {
@@ -83,7 +63,7 @@ function createPathResolver(root) {
         if (fs.existsSync(path.join(root, numberedFolder)))
             return numberedFolder;
         if (byCanonical.size === 0) {
-            for (const rel of collectFiles(root))
+            for (const rel of walkFiles(root))
                 byCanonical.set(canonicalPathKey(rel), rel);
         }
         const directKey = canonicalPathKey(direct).replace(/^[a-z]:/i, '').replace(/^\/+/, '');

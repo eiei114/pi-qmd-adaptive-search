@@ -9,6 +9,23 @@ function projectPath(root, relativePath) {
   return path.join(root, relativePath);
 }
 
+function walkFiles(root, include = (_rel) => true, dir = root, output = []) {
+  let entries;
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return output;
+  }
+  for (const entry of entries) {
+    const abs = path.join(dir, entry.name);
+    const rel = toPosix(path.relative(root, abs));
+    if (rel === '.git' || rel.startsWith('.git/') || rel === 'node_modules' || rel.includes('/node_modules/')) continue;
+    if (entry.isDirectory()) walkFiles(root, include, abs, output);
+    else if (entry.isFile() && include(rel)) output.push(rel);
+  }
+  return output;
+}
+
 function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
 }
@@ -70,4 +87,4 @@ function deepMerge(base, patch) {
   return output;
 }
 
-export { toPosix, projectPath, ensureDir, readJson, writeJson, appendJsonLine, readJsonLines, updateGitignore, deepMerge };
+export { toPosix, projectPath, walkFiles, ensureDir, readJson, writeJson, appendJsonLine, readJsonLines, updateGitignore, deepMerge };

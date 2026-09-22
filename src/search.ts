@@ -221,7 +221,7 @@ function adaptiveSearch(input, options: any = {}) {
 
   const qmdCandidates: RankedCandidate[] = [];
   for (const result of qmd.results || []) {
-    if (fs.existsSync(path.join(root, result.path)) && shouldInclude(result.path, config)) {
+    if (fs.existsSync(path.join(root, result.path)) && shouldInclude(result.filterPath || result.path, config)) {
       qmdCandidates.push(result);
     }
   }

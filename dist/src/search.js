@@ -239,7 +239,7 @@ function adaptiveSearch(input, options = {}) {
         warnings.push(`qmd search failed; fallback used: ${String(qmd.error).slice(0, 240)}`);
     const qmdCandidates = [];
     for (const result of qmd.results || []) {
-        if (fs.existsSync(path.join(root, result.path)) && shouldInclude(result.path, config)) {
+        if (fs.existsSync(path.join(root, result.path)) && shouldInclude(result.filterPath || result.path, config)) {
             qmdCandidates.push(result);
         }
     }

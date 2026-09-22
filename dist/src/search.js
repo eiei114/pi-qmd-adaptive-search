@@ -66,7 +66,7 @@ function walkFiles(root, config) {
 }
 function readLead(root, rel, maxChars) {
     try {
-        const text = fs.readFileSync(path.join(root, rel), 'utf8');
+        const text = fs.readFileSync(path.resolve(root, rel), 'utf8');
         const lead = text.match(/^lead:\s*(.+)$/m);
         const body = text.replace(/^---[\s\S]*?---\s*/m, '').split(/\r?\n/).find((line) => line.trim() && !line.trim().startsWith('#')) || '';
         return String((lead && lead[1]) || body).trim().slice(0, maxChars);
@@ -77,7 +77,7 @@ function readLead(root, rel, maxChars) {
 }
 function highlights(root, rel, terms, maxPer, maxChars) {
     try {
-        const text = fs.readFileSync(path.join(root, rel), 'utf8');
+        const text = fs.readFileSync(path.resolve(root, rel), 'utf8');
         const lines = text.split(/\r?\n/);
         const hits = [];
         for (const line of lines) {
@@ -239,7 +239,7 @@ function adaptiveSearch(input, options = {}) {
         warnings.push(`qmd search failed; fallback used: ${String(qmd.error).slice(0, 240)}`);
     const qmdCandidates = [];
     for (const result of qmd.results || []) {
-        if (fs.existsSync(path.join(root, result.path)) && shouldInclude(result.filterPath || result.path, config)) {
+        if (fs.existsSync(path.resolve(root, result.path)) && shouldInclude(result.filterPath || result.path, config)) {
             qmdCandidates.push(result);
         }
     }

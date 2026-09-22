@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## [1.4.0] - 2026-09-23
+
+### Added
+
+- Support opt-in external qmd collections through `collectionRoots` in project configuration (#54, #65), including snippets and collection-relative include/exclude globs. Local fallback remains project-only.
+
+### Fixed
+
+- Reject traversal and symlinks escaping configured collection roots.
+- Resolve external result paths correctly across Windows volumes.
+
 ## [1.3.1] - 2026-08-22
 
 ### Changed

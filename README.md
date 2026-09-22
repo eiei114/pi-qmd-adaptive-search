@@ -824,3 +824,17 @@ Please report vulnerabilities via [SECURITY.md](SECURITY.md). Avoid filing sensi
 ## License
 
 MIT
+
+## External qmd collections
+
+Opt in to existing external collections in the project's `.qmd-adaptive-search/config.json`:
+
+```json
+{
+  "collectionRoots": {
+    "contextqmd-docs": "/home/user/.cache/contextqmd/docs"
+  }
+}
+```
+
+Keys match the collection name in `qmd://contextqmd-docs/path.md`. Values must be absolute directories (on Windows, use `C:/docs`). Register/index the collection with qmd separately. This mapping does not scan, watch, or modify external directories; local fallback remains project-only. Results use project-relative paths, including `../` for external files (absolute paths across Windows volumes), with snippets from the mapped file. Include/exclude globs apply relative to the collection root. Traversal and symlinks escaping that root are rejected. Without this opt-in, results remain confined to the project.

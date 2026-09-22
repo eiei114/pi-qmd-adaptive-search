@@ -1,5 +1,6 @@
 declare const DEFAULT_CONFIG: Readonly<{
     qmdCommand: any;
+    collectionRoots: {};
     installInstructions: "auto";
     fileGlobs: string[];
     excludeGlobs: string[];

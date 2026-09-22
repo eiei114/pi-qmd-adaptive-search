@@ -1,5 +1,6 @@
 const DEFAULT_CONFIG = Object.freeze({
     qmdCommand: null,
+    collectionRoots: {},
     installInstructions: 'auto',
     fileGlobs: ['**/*.md', '**/*.txt', '**/*.ts', '**/*.tsx', '**/*.js', '**/*.py', '**/*.json', '**/*.yaml', '**/*.yml'],
     excludeGlobs: ['node_modules/**', '.git/**', 'dist/**', 'build/**', 'coverage/**', '*.lock'],

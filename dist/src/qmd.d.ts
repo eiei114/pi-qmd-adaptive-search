@@ -10,7 +10,7 @@ declare function detectQmd(config: any, root?: string): {
     command: any;
     errors: any[];
 };
-declare function parseQmdSearchOutput(output: any, root: any): any[];
+declare function parseQmdSearchOutput(output: any, root: any, collectionRoots?: Record<string, unknown>): any[];
 declare function qmdSearch(query: any, maxResults: any, config: any, root?: string, options?: any): {
     detected: {
         available: boolean;

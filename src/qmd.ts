@@ -85,21 +85,35 @@ function detectQmd(config, root = process.cwd()) {
   return { available: false, command: null, errors };
 }
 
-function parseQmdSearchOutput(output, root) {
+function parseQmdSearchOutput(output, root, collectionRoots: Record<string, unknown> = {}) {
   const results = [];
   const seen = new Set();
   const resolvePath = createPathResolver(root);
   const lines = String(output || '').split(/\r?\n/);
   for (const line of lines) {
-    const qmdMatch = line.match(/qmd:\/\/[^/]+\/(.+?\.(?:md|txt|ts|tsx|js|py|json|ya?ml))(?:[:\s]|$)/i);
+    const qmdMatch = line.match(/qmd:\/\/([^/]+)\/(.+?\.(?:md|txt|ts|tsx|js|py|json|ya?ml))(?:[:\s]|$)/i);
     const mdPathMatch = line.match(/((?:[\w .()\-[\]@]+[\\/])+[\w .()\-[\]@]+\.(?:md|txt|ts|tsx|js|py|json|ya?ml))/i);
-    const raw = qmdMatch ? qmdMatch[1] : (mdPathMatch ? mdPathMatch[1] : null);
+    const raw = qmdMatch ? qmdMatch[2] : (mdPathMatch ? mdPathMatch[1] : null);
     if (!raw) continue;
-    const rel = resolvePath(raw);
-    if (!fs.existsSync(path.join(root, rel))) continue;
+    const mapped = qmdMatch && Object.hasOwn(collectionRoots || {}, qmdMatch[1]);
+    const configuredRoot = mapped ? collectionRoots[qmdMatch[1]] : undefined;
+    if (mapped && (typeof configuredRoot !== 'string' || !path.isAbsolute(configuredRoot))) continue;
+    const allowedRoot = mapped ? configuredRoot as string : root;
+    const withinRoot = mapped ? raw : resolvePath(raw);
+    const file = path.resolve(allowedRoot, withinRoot);
+    const inside = (base, target) => {
+      const relative = path.relative(base, target);
+      return relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
+    };
+    try {
+      if (!inside(path.resolve(allowedRoot), file) ||
+          !inside(fs.realpathSync(allowedRoot), fs.realpathSync(file)) ||
+          !fs.statSync(file).isFile()) continue;
+    } catch { continue; }
+    const rel = toPosix(path.relative(root, file));
     if (seen.has(rel)) continue;
     seen.add(rel);
-    results.push({ path: rel, source: ['qmd'], score: 0.75, why: ['qmd search match'] });
+    results.push({ path: rel, filterPath: toPosix(path.relative(allowedRoot, file)), source: ['qmd'], score: 0.75, why: ['qmd search match'] });
   }
   return results;
 }
@@ -110,7 +124,7 @@ function qmdSearch(query, maxResults, config, root = process.cwd(), options: any
   const search = runCommand(detected.command, ['search', query, '-n', String(maxResults)], { cwd: root, timeoutMs: config.search?.qmdSearchTimeoutMs || 15000 });
   if (search.status !== 0) return { detected, results: [], error: search.stderr || String(search.error || 'qmd search failed'), method: 'search' };
 
-  const searchResults = parseQmdSearchOutput(search.stdout, root);
+  const searchResults = parseQmdSearchOutput(search.stdout, root, config.collectionRoots);
   if (searchResults.length > 0) return { detected, results: searchResults, raw: search.stdout, method: 'search' };
 
   if (!options.useQueryFallback) return { detected, results: [], raw: search.stdout, method: 'search' };
@@ -119,7 +133,7 @@ function qmdSearch(query, maxResults, config, root = process.cwd(), options: any
   if (semantic.status !== 0) return { detected, results: [], error: semantic.stderr || String(semantic.error || 'qmd query failed'), raw: search.stdout, method: 'query' };
   return {
     detected,
-    results: parseQmdSearchOutput(semantic.stdout, root).map((result) => ({ ...result, why: ['qmd query match'] })),
+    results: parseQmdSearchOutput(semantic.stdout, root, config.collectionRoots).map((result) => ({ ...result, why: ['qmd query match'] })),
     raw: semantic.stdout,
     method: 'query'
   };

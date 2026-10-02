@@ -45,19 +45,22 @@ function globToRegex(glob) {
   return new RegExp(out);
 }
 
-function matchesAny(rel, globs) {
-  return globs.some((glob) => globToRegex(toPosix(glob)).test(rel));
-}
-
-function shouldInclude(rel, config) {
-  const posix = toPosix(rel);
-  if (matchesAny(posix, config.excludeGlobs || [])) return false;
-  if (!matchesAny(posix, config.fileGlobs || [])) return false;
-  return TEXT_EXTS.has(path.extname(posix).toLowerCase());
+function createIncludePredicate(config) {
+  // Compile the configured globs once per traversal rather than once per file.
+  // Fallback search can inspect thousands of files, so repeated regex creation
+  // otherwise becomes a measurable part of the hot path.
+  const excludeMatchers = (config.excludeGlobs || []).map(globToRegex);
+  const fileMatchers = (config.fileGlobs || []).map(globToRegex);
+  return (rel) => {
+    const posix = toPosix(rel);
+    if (excludeMatchers.some((matcher) => matcher.test(posix))) return false;
+    if (!fileMatchers.some((matcher) => matcher.test(posix))) return false;
+    return TEXT_EXTS.has(path.extname(posix).toLowerCase());
+  };
 }
 
 function walkFiles(root, config) {
-  return walkProjectFiles(root, (rel) => shouldInclude(rel, config));
+  return walkProjectFiles(root, createIncludePredicate(config));
 }
 
 function readLead(root, rel, maxChars) {
@@ -220,8 +223,9 @@ function adaptiveSearch(input, options: any = {}) {
   else if (qmd.error) warnings.push(`qmd search failed; fallback used: ${String(qmd.error).slice(0, 240)}`);
 
   const qmdCandidates: RankedCandidate[] = [];
+  const includeFile = createIncludePredicate(config);
   for (const result of qmd.results || []) {
-    if (fs.existsSync(path.resolve(root, result.path)) && shouldInclude(result.filterPath || result.path, config)) {
+    if (fs.existsSync(path.resolve(root, result.path)) && includeFile(result.filterPath || result.path)) {
       qmdCandidates.push(result);
     }
   }

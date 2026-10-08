@@ -16,6 +16,9 @@ test('README install-from-source uses the GitHub repository URL', () => {
     new RegExp(pkg.repository.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
     'README clone instructions should match package.json repository.url',
   );
+  const sourceInstall = readme.match(/git clone[\s\S]*?npm link/);
+  assert.ok(sourceInstall, 'README should include source installation instructions');
+  assert.match(sourceInstall[0], /npm ci/, 'Source installation should install locked dependencies before testing');
 });
 
 test('README Development section documents local CI validation commands', () => {

@@ -105,6 +105,7 @@ From source:
 ```bash
 git clone https://github.com/eiei114/pi-qmd-adaptive-search.git
 cd pi-qmd-adaptive-search
+npm ci
 npm test
 npm link
 ```

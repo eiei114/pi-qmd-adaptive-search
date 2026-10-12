@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "verification_contract": "pi-sdk-behavior-v2",
+  "sdk_versions": {
+    "@earendil-works/pi-agent-core": "1.1.0",
+    "@earendil-works/pi-ai": "1.1.0",
+    "@earendil-works/pi-coding-agent": "1.1.0",
+    "@earendil-works/pi-tui": "1.1.0"
+  },
+  "platform": "win32",
+  "model_inference": "none; an isolated deterministic local OpenAI-compatible stream supplies tool calls to the actual Pi host, which loads and executes the real package extension",
+  "unhandled_errors": 0,
+  "extension_load_errors": 0,
+  "cases": [
+    {
+      "name": "extension_load",
+      "command": "npm run smoke:pi",
+      "exit_code": 0,
+      "passed": true,
+      "evidence": "[{\"exit_code\":0,\"signal\":null,\"timedOut\":false,\"shutdownTimedOut\":false,\"commandHandled\":false,\"launchError\":null,\"providerToolNames\":[\"qmd_adaptive_search\",\"qmd_adaptive_status\",\"qmd_search_feedback\"],\"records\":[{\"id\":\"smoke-commands\",\"type\":\"response\",\"command\":\"get_commands\",\"success\":true,\"extensionCommands\":[\"qmd-a:init\",\"qmd-a:status\",\"qmd-a:review\",\"qmd-a:approve\",\"qmd-a:configure\",\"qmd-a:install\",\"qmd-a:setup\",\"qmd-a:setup-run\",\"qmd-a:update\",\"qmd-a:update-run\",\"qmd-a:embed\",\"qmd-a:embed-run\",\"qmd-a:maintain\",\"qmd-a:maintain-run\",\"llama\"]},{\"id\":\"smoke-prompt\",\"type\":\"response\",\"command\":\"prompt\",\"success\":true,\"disposition\":\"started\"},{\"type\":\"agent_settled\",\"aborted\":false}]},{\"exit_code\":0,\"signal\":null,\"timedOut\":false,\"shutdownTimedOut\":false,\"commandHandled\":true,\"launchError\":null,\"providerToolNames\":[],\"records\":[{\"type\":\"extension_ui_request\",\"method\":\"notify\",\"message\":\"qmd adaptive config initialized\",\"notifyType\":\"info\"},{\"id\":\"smoke-commands\",\"type\":\"response\",\"command\":\"get_commands\",\"success\":true,\"extensionCommands\":[\"qmd-a:init\",\"qmd-a:status\",\"qmd-a:review\",\"qmd-a:approve\",\"qmd-a:configure\",\"qmd-a:install\",\"qmd-a:setup\",\"qmd-a:setup-run\",\"qmd-a:update\",\"qmd-a:update-run\",\"qmd-a:embed\",\"qmd-a:embed-run\",\"qmd-a:maintain\",\"qmd-a:maintain-run\",\"llama\"]},{\"id\":\"smoke-prompt\",\"type\":\"response\",\"command\":\"prompt\",\"success\":true,\"disposition\":\"handled\"}]}]",
+      "assertions": [
+        {
+          "id": "extension_registered",
+          "expected": "Actual Pi registers all qmd-a commands and advertises qmd_adaptive_search to its provider",
+          "observed": "{\"qmdCommandCount\":14,\"missingCommands\":[],\"searchToolRegistered\":true}",
+          "passed": true
+        },
+        {
+          "id": "extension_command_response",
+          "expected": "Pi handles /qmd-a:init, emits its notification, and creates the project config",
+          "observed": "{\"prompt\":{\"success\":true,\"disposition\":\"handled\"},\"notification\":\"qmd adaptive config initialized\",\"configCreated\":true}",
+          "passed": true
+        },
+        {
+          "id": "clean_shutdown",
+          "expected": "Actual Pi reaches agent_settled and exits zero without unhandled or shutdown errors",
+          "observed": "{\"exit_code\":0,\"agentSettled\":{\"aborted\":false},\"commandHandled\":false,\"errors\":false,\"timedOut\":false,\"shutdownTimedOut\":false,\"launchError\":null}",
+          "passed": true
+        },
+        {
+          "id": "clean_shutdown",
+          "expected": "Actual Pi reaches agent_settled and exits zero without unhandled or shutdown errors",
+          "observed": "{\"exit_code\":0,\"agentSettled\":null,\"commandHandled\":true,\"errors\":false,\"timedOut\":false,\"shutdownTimedOut\":false,\"launchError\":null}",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "happy_path",
+      "command": "npm run smoke:pi",
+      "exit_code": 0,
+      "passed": true,
+      "evidence": "[{\"exit_code\":0,\"signal\":null,\"timedOut\":false,\"shutdownTimedOut\":false,\"commandHandled\":false,\"launchError\":null,\"providerToolNames\":[\"qmd_adaptive_search\",\"qmd_adaptive_status\",\"qmd_search_feedback\"],\"records\":[{\"id\":\"smoke-commands\",\"type\":\"response\",\"command\":\"get_commands\",\"success\":true,\"extensionCommands\":[\"qmd-a:init\",\"qmd-a:status\",\"qmd-a:review\",\"qmd-a:approve\",\"qmd-a:configure\",\"qmd-a:install\",\"qmd-a:setup\",\"qmd-a:setup-run\",\"qmd-a:update\",\"qmd-a:update-run\",\"qmd-a:embed\",\"qmd-a:embed-run\",\"qmd-a:maintain\",\"qmd-a:maintain-run\",\"llama\"]},{\"id\":\"smoke-prompt\",\"type\":\"response\",\"command\":\"prompt\",\"success\":true,\"disposition\":\"started\"},{\"type\":\"tool_execution_start\",\"toolCallId\":\"call_qmd_adaptive_search\",\"toolName\":\"qmd_adaptive_search\",\"args\":{\"query\":\"release rollout decision\",\"mode\":\"auto\",\"maxResults\":1}},{\"type\":\"tool_execution_end\",\"toolCallId\":\"call_qmd_adaptive_search\",\"toolName\":\"qmd_adaptive_search\",\"isError\":false,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"qmd_adaptive_search: 1 result(s)\\n1. docs/ReleaseDecision.md\\n   title: ReleaseDecision | score: 0.68 | source: filename, path\\n   why: —\\n\\nWarnings:\\n- qmd was not found. qmd_adaptive_search can run filename/content fallback, but semantic search needs qmd. Install options: bun add -g @tobilu/qmd npm install -g @tobilu/qmd pnpm add -g @tobilu/qmd yarn global add @tobilu/qmd or configure qmdCommand in .qmd-adaptive-search/config.json: { \\\"qmdCommand\\\": [\\\"node\\\", \\\"path/to/qmd.js\\\"] }\\n\\nBackground jobs: qmd fallback used (use qmd_adaptive_status for details).\"}],\"details\":{\"resultCount\":1,\"resultPaths\":[\"docs/ReleaseDecision.md\"],\"warnings\":[\"qmd was not found.\\n\\nqmd_adaptive_search can run filename/content fallback, but semantic search needs qmd.\\n\\nInstall options:\\n  bun add -g @tobilu/qmd\\n  npm install -g @tobilu/qmd\\n  pnpm add -g @tobilu/qmd\\n  yarn global add @tobilu/qmd\\n\\nor configure qmdCommand in .qmd-adaptive-search/config.json:\\n{ \\\"qmdCommand\\\": [\\\"node\\\", \\\"path/to/qmd.js\\\"] }\"],\"results\":[{\"path\":\"docs/ReleaseDecision.md\",\"title\":\"ReleaseDecision\",\"score\":0.68,\"source\":[\"filename\",\"path\"],\"why\":[]}],\"backgroundJobStatus\":{\"pendingCount\":0,\"failedCount\":0,\"running\":false,\"lastSearchStatus\":\"skipped\",\"qmdFallbackUsed\":true,\"qmdAvailable\":false}}}},{\"type\":\"agent_settled\",\"aborted\":false}]}]",
+      "assertions": [
+        {
+          "id": "feature_response",
+          "expected": "Pi runs qmd_adaptive_search and returns docs/ReleaseDecision.md in text and structured details",
+          "observed": "{\"isError\":false,\"text\":\"qmd_adaptive_search: 1 result(s)\\n1. docs/ReleaseDecision.md\\n   title: ReleaseDecision | score: 0.68 | source: filename, path\\n   why: —\\n\\nWarnings:\\n- qmd was not found. qmd_adaptive_search can run filename/content fallback, but semantic search needs qmd. Install options: bun add -g @tobilu/qmd npm install -g @tobilu/qmd pnpm add -g @tobilu/qmd yarn global add @tobilu/qmd or configure qmdCommand in .qmd-adaptive-search/config.json: { \\\"qmdCommand\\\": [\\\"node\\\", \\\"path/to/qmd.js\\\"] }\\n\\nBackground jobs: qmd fallback used (use qmd_adaptive_status for details).\",\"resultPaths\":[\"docs/ReleaseDecision.md\"]}",
+          "passed": true
+        },
+        {
+          "id": "clean_shutdown",
+          "expected": "Actual Pi reaches agent_settled and exits zero without unhandled or shutdown errors",
+          "observed": "{\"exit_code\":0,\"agentSettled\":{\"aborted\":false},\"commandHandled\":false,\"errors\":false,\"timedOut\":false,\"shutdownTimedOut\":false,\"launchError\":null}",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "error_path",
+      "command": "npm run smoke:pi",
+      "exit_code": 0,
+      "passed": true,
+      "evidence": "[{\"exit_code\":0,\"signal\":null,\"timedOut\":false,\"shutdownTimedOut\":false,\"commandHandled\":false,\"launchError\":null,\"providerToolNames\":[\"qmd_adaptive_search\",\"qmd_adaptive_status\",\"qmd_search_feedback\"],\"records\":[{\"id\":\"smoke-commands\",\"type\":\"response\",\"command\":\"get_commands\",\"success\":true,\"extensionCommands\":[\"qmd-a:init\",\"qmd-a:status\",\"qmd-a:review\",\"qmd-a:approve\",\"qmd-a:configure\",\"qmd-a:install\",\"qmd-a:setup\",\"qmd-a:setup-run\",\"qmd-a:update\",\"qmd-a:update-run\",\"qmd-a:embed\",\"qmd-a:embed-run\",\"qmd-a:maintain\",\"qmd-a:maintain-run\",\"llama\"]},{\"id\":\"smoke-prompt\",\"type\":\"response\",\"command\":\"prompt\",\"success\":true,\"disposition\":\"started\"},{\"type\":\"tool_execution_start\",\"toolCallId\":\"call_qmd_adaptive_search\",\"toolName\":\"qmd_search_feedback\",\"args\":{}},{\"type\":\"tool_execution_end\",\"toolCallId\":\"call_qmd_adaptive_search\",\"toolName\":\"qmd_search_feedback\",\"isError\":true,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"selectedPaths or selectedPath is required\"}],\"details\":{}}},{\"type\":\"agent_settled\",\"aborted\":false}]}]",
+      "assertions": [
+        {
+          "id": "handled_error",
+          "expected": "Pi reports qmd_search_feedback rejection as a handled tool error containing selectedPaths or selectedPath is required",
+          "observed": "{\"isError\":true,\"text\":\"selectedPaths or selectedPath is required\",\"resultPaths\":[]}",
+          "passed": true
+        },
+        {
+          "id": "clean_shutdown",
+          "expected": "Actual Pi reaches agent_settled and exits zero without unhandled or shutdown errors",
+          "observed": "{\"exit_code\":0,\"agentSettled\":{\"aborted\":false},\"commandHandled\":false,\"errors\":false,\"timedOut\":false,\"shutdownTimedOut\":false,\"launchError\":null}",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "reload_cleanup",
+      "command": "npm run smoke:pi",
+      "exit_code": 0,
+      "passed": true,
+      "evidence": "[{\"exit_code\":0,\"signal\":null,\"timedOut\":false,\"shutdownTimedOut\":false,\"commandHandled\":false,\"launchError\":null,\"providerToolNames\":[\"qmd_adaptive_search\",\"qmd_adaptive_status\",\"qmd_search_feedback\"],\"records\":[{\"id\":\"smoke-commands\",\"type\":\"response\",\"command\":\"get_commands\",\"success\":true,\"extensionCommands\":[\"qmd-a:init\",\"qmd-a:status\",\"qmd-a:review\",\"qmd-a:approve\",\"qmd-a:configure\",\"qmd-a:install\",\"qmd-a:setup\",\"qmd-a:setup-run\",\"qmd-a:update\",\"qmd-a:update-run\",\"qmd-a:embed\",\"qmd-a:embed-run\",\"qmd-a:maintain\",\"qmd-a:maintain-run\",\"llama\"]},{\"id\":\"smoke-prompt\",\"type\":\"response\",\"command\":\"prompt\",\"success\":true,\"disposition\":\"started\"},{\"type\":\"tool_execution_start\",\"toolCallId\":\"call_qmd_adaptive_search\",\"toolName\":\"qmd_adaptive_search\",\"args\":{\"query\":\"release rollout decision\",\"mode\":\"auto\",\"maxResults\":1}},{\"type\":\"tool_execution_end\",\"toolCallId\":\"call_qmd_adaptive_search\",\"toolName\":\"qmd_adaptive_search\",\"isError\":false,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"qmd_adaptive_search: 1 result(s)\\n1. docs/ReleaseDecision.md\\n   title: ReleaseDecision | score: 0.68 | source: filename, path\\n   why: —\\n\\nWarnings:\\n- qmd was not found. qmd_adaptive_search can run filename/content fallback, but semantic search needs qmd. Install options: bun add -g @tobilu/qmd npm install -g @tobilu/qmd pnpm add -g @tobilu/qmd yarn global add @tobilu/qmd or configure qmdCommand in .qmd-adaptive-search/config.json: { \\\"qmdCommand\\\": [\\\"node\\\", \\\"path/to/qmd.js\\\"] }\\n\\nBackground jobs: qmd fallback used (use qmd_adaptive_status for details).\"}],\"details\":{\"resultCount\":1,\"resultPaths\":[\"docs/ReleaseDecision.md\"],\"warnings\":[\"qmd was not found.\\n\\nqmd_adaptive_search can run filename/content fallback, but semantic search needs qmd.\\n\\nInstall options:\\n  bun add -g @tobilu/qmd\\n  npm install -g @tobilu/qmd\\n  pnpm add -g @tobilu/qmd\\n  yarn global add @tobilu/qmd\\n\\nor configure qmdCommand in .qmd-adaptive-search/config.json:\\n{ \\\"qmdCommand\\\": [\\\"node\\\", \\\"path/to/qmd.js\\\"] }\"],\"results\":[{\"path\":\"docs/ReleaseDecision.md\",\"title\":\"ReleaseDecision\",\"score\":0.68,\"source\":[\"filename\",\"path\"],\"why\":[]}],\"backgroundJobStatus\":{\"pendingCount\":0,\"failedCount\":0,\"running\":false,\"lastSearchStatus\":\"skipped\",\"qmdFallbackUsed\":true,\"qmdAvailable\":false}}}},{\"type\":\"agent_settled\",\"aborted\":false}]},{\"exit_code\":0,\"signal\":null,\"timedOut\":false,\"shutdownTimedOut\":false,\"commandHandled\":false,\"launchError\":null,\"providerToolNames\":[\"qmd_adaptive_search\",\"qmd_adaptive_status\",\"qmd_search_feedback\"],\"records\":[{\"id\":\"smoke-commands\",\"type\":\"response\",\"command\":\"get_commands\",\"success\":true,\"extensionCommands\":[\"qmd-a:init\",\"qmd-a:status\",\"qmd-a:review\",\"qmd-a:approve\",\"qmd-a:configure\",\"qmd-a:install\",\"qmd-a:setup\",\"qmd-a:setup-run\",\"qmd-a:update\",\"qmd-a:update-run\",\"qmd-a:embed\",\"qmd-a:embed-run\",\"qmd-a:maintain\",\"qmd-a:maintain-run\",\"llama\"]},{\"id\":\"smoke-prompt\",\"type\":\"response\",\"command\":\"prompt\",\"success\":true,\"disposition\":\"started\"},{\"type\":\"tool_execution_start\",\"toolCallId\":\"call_qmd_adaptive_search\",\"toolName\":\"qmd_adaptive_search\",\"args\":{\"query\":\"release rollout decision\",\"mode\":\"auto\",\"maxResults\":1}},{\"type\":\"tool_execution_end\",\"toolCallId\":\"call_qmd_adaptive_search\",\"toolName\":\"qmd_adaptive_search\",\"isError\":false,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"qmd_adaptive_search: 1 result(s)\\n1. docs/ReleaseDecision.md\\n   title: ReleaseDecision | score: 0.68 | source: filename, path\\n   why: —\\n\\nWarnings:\\n- qmd was not found. qmd_adaptive_search can run filename/content fallback, but semantic search needs qmd. Install options: bun add -g @tobilu/qmd npm install -g @tobilu/qmd pnpm add -g @tobilu/qmd yarn global add @tobilu/qmd or configure qmdCommand in .qmd-adaptive-search/config.json: { \\\"qmdCommand\\\": [\\\"node\\\", \\\"path/to/qmd.js\\\"] }\\n\\nBackground jobs: qmd fallback used (use qmd_adaptive_status for details).\"}],\"details\":{\"resultCount\":1,\"resultPaths\":[\"docs/ReleaseDecision.md\"],\"warnings\":[\"qmd was not found.\\n\\nqmd_adaptive_search can run filename/content fallback, but semantic search needs qmd.\\n\\nInstall options:\\n  bun add -g @tobilu/qmd\\n  npm install -g @tobilu/qmd\\n  pnpm add -g @tobilu/qmd\\n  yarn global add @tobilu/qmd\\n\\nor configure qmdCommand in .qmd-adaptive-search/config.json:\\n{ \\\"qmdCommand\\\": [\\\"node\\\", \\\"path/to/qmd.js\\\"] }\"],\"results\":[{\"path\":\"docs/ReleaseDecision.md\",\"title\":\"ReleaseDecision\",\"score\":0.68,\"source\":[\"filename\",\"path\"],\"why\":[]}],\"backgroundJobStatus\":{\"pendingCount\":0,\"failedCount\":0,\"running\":false,\"lastSearchStatus\":\"skipped\",\"qmdFallbackUsed\":true,\"qmdAvailable\":false}}}},{\"type\":\"agent_settled\",\"aborted\":false}]}]",
+      "assertions": [
+        {
+          "id": "reloaded_extension_registered",
+          "expected": "Actual Pi registers all qmd-a commands and advertises qmd_adaptive_search to its provider",
+          "observed": "{\"qmdCommandCount\":14,\"missingCommands\":[],\"searchToolRegistered\":true}",
+          "passed": true
+        },
+        {
+          "id": "reloaded_feature_response",
+          "expected": "The second Pi process executes qmd_adaptive_search and returns the fixture path",
+          "observed": "\"{\\\"isError\\\":false,\\\"text\\\":\\\"qmd_adaptive_search: 1 result(s)\\\\n1. docs/ReleaseDecision.md\\\\n   title: ReleaseDecision | score: 0.68 | source: filename, path\\\\n   why: —\\\\n\\\\nWarnings:\\\\n- qmd was not found. qmd_adaptive_search can run filename/content fallback, but semantic search needs qmd. Install options: bun add -g @tobilu/qmd npm install -g @tobilu/qmd pnpm add -g @tobilu/qmd yarn global add @tobilu/qmd or configure qmdCommand in .qmd-adaptive-search/config.json: { \\\\\\\"qmdCommand\\\\\\\": [\\\\\\\"node\\\\\\\", \\\\\\\"path/to/qmd.js\\\\\\\"] }\\\\n\\\\nBackground jobs: qmd fallback used (use qmd_adaptive_status for details).\\\",\\\"resultPaths\\\":[\\\"docs/ReleaseDecision.md\\\"]}\"",
+          "passed": true
+        },
+        {
+          "id": "clean_shutdown",
+          "expected": "Both actual Pi processes settle and exit zero without unhandled or shutdown errors",
+          "observed": "{\"first\":{\"exit_code\":0,\"agentSettled\":{\"aborted\":false},\"commandHandled\":false,\"errors\":false,\"timedOut\":false,\"shutdownTimedOut\":false,\"launchError\":null},\"second\":{\"exit_code\":0,\"agentSettled\":{\"aborted\":false},\"commandHandled\":false,\"errors\":false,\"timedOut\":false,\"shutdownTimedOut\":false,\"launchError\":null}}",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "host_shell",
+      "command": "npm run smoke:pi",
+      "exit_code": 0,
+      "passed": true,
+      "evidence": "1.1.0\n",
+      "assertions": [
+        {
+          "id": "native_shell_boundary",
+          "expected": "Native host shell starts the locally pinned Pi CLI and returns its exact version",
+          "observed": "{\"exit_code\":0,\"output\":\"1.1.0\",\"expectedVersion\":\"1.1.0\"}",
+          "passed": true
+        }
+      ]
+    }
+  ]
+}

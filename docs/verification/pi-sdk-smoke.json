@@ -34,13 +34,7 @@
         {
           "id": "clean_shutdown",
           "expected": "Actual Pi reaches agent_settled and exits zero without unhandled or shutdown errors",
-          "observed": "{\"exit_code\":0,\"agentSettled\":{\"aborted\":false},\"commandHandled\":false,\"errors\":false,\"timedOut\":false,\"shutdownTimedOut\":false,\"launchError\":null}",
-          "passed": true
-        },
-        {
-          "id": "clean_shutdown",
-          "expected": "Actual Pi reaches agent_settled and exits zero without unhandled or shutdown errors",
-          "observed": "{\"exit_code\":0,\"agentSettled\":null,\"commandHandled\":true,\"errors\":false,\"timedOut\":false,\"shutdownTimedOut\":false,\"launchError\":null}",
+          "observed": "{\"first\":{\"exit_code\":0,\"agentSettled\":{\"aborted\":false},\"commandHandled\":false,\"errors\":false,\"timedOut\":false,\"shutdownTimedOut\":false,\"launchError\":null},\"second\":{\"exit_code\":0,\"agentSettled\":null,\"commandHandled\":true,\"errors\":false,\"timedOut\":false,\"shutdownTimedOut\":false,\"launchError\":null}}",
           "passed": true
         }
       ]

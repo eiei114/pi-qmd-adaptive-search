@@ -434,11 +434,19 @@ async function runSmoke() {
     try {
       initializedConfig = readJson(join(projectRoot, ".qmd-adaptive-search", "config.json"));
     } catch {}
+    // One clean_shutdown assertion covering BOTH real Pi processes: duplicate
+    // assertion IDs are rejected by the behavior contract.
+    const loadShutdown = shutdownAssertion(commandResult);
+    const combinedShutdown = {
+      id: "clean_shutdown",
+      expected: startup.expected,
+      observed: JSON.stringify({ first: JSON.parse(startup.observed), second: JSON.parse(loadShutdown.observed) }),
+      passed: startup.passed && loadShutdown.passed,
+    };
     cases.push(makeCase("extension_load", commandResult, [
       registration,
       extensionCommandAssertion(commandResult, initializedConfig),
-      startup,
-      shutdownAssertion(commandResult),
+      combinedShutdown,
     ], [result, commandResult]));
 
     result = await runRpcProcess({ mode: "search", prompt: "Run qmd_adaptive_search for the exact query release rollout decision." });

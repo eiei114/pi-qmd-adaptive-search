@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Fixed
+
+- Adapt Pi extension command registrations to the SDK 1.1.0 `void` handler contract.
+
 ## [1.4.1] - 2026-09-30
 
 ### Changed

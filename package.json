@@ -1,6 +1,6 @@
 {
   "name": "pi-qmd-adaptive-search",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Project-local semantic file discovery with qmd, fallback search, and local adaptive feedback.",
   "type": "module",
   "keywords": [
@@ -40,8 +40,9 @@
   "scripts": {
     "ci": "npm run check && npm run version:check",
     "build": "tsc -p tsconfig.json",
-    "test": "npm run build && node --test dist/test/*.test.js",
+    "test": "npm run build && node --test dist/test/*.test.js scripts/pi-sdk-smoke-contract.test.mjs tests/release-trigger-contract.test.mjs",
     "smoke": "npm run build && node bin/qmd-adaptive-search.js --help",
+    "smoke:pi": "node scripts/pi-sdk-smoke.mjs",
     "check": "npm test && npm run smoke && npm pack --dry-run",
     "prepack": "npm run build",
     "version:check": "node scripts/check-version-bump.mjs"
@@ -52,7 +53,12 @@
   "author": "Keisu",
   "license": "MIT",
   "devDependencies": {
+    "@earendil-works/pi-agent-core": "1.1.0",
+    "@earendil-works/pi-ai": "1.1.0",
+    "@earendil-works/pi-coding-agent": "1.1.0",
+    "@earendil-works/pi-tui": "1.1.0",
     "@types/node": "^26.6.4",
+    "typebox": "1.3.27",
     "typescript": "^7.0.2"
   },
   "peerDependencies": {

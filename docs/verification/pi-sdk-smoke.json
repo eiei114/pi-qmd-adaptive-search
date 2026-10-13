@@ -103,7 +103,7 @@
         {
           "id": "reloaded_feature_response",
           "expected": "The second Pi process executes qmd_adaptive_search and returns the fixture path",
-          "observed": "\"{\\\"isError\\\":false,\\\"text\\\":\\\"qmd_adaptive_search: 1 result(s)\\\\n1. docs/ReleaseDecision.md\\\\n   title: ReleaseDecision | score: 0.68 | source: filename, path\\\\n   why: —\\\\n\\\\nWarnings:\\\\n- qmd was not found. qmd_adaptive_search can run filename/content fallback, but semantic search needs qmd. Install options: bun add -g @tobilu/qmd npm install -g @tobilu/qmd pnpm add -g @tobilu/qmd yarn global add @tobilu/qmd or configure qmdCommand in .qmd-adaptive-search/config.json: { \\\\\\\"qmdCommand\\\\\\\": [\\\\\\\"node\\\\\\\", \\\\\\\"path/to/qmd.js\\\\\\\"] }\\\\n\\\\nBackground jobs: qmd fallback used (use qmd_adaptive_status for details).\\\",\\\"resultPaths\\\":[\\\"docs/ReleaseDecision.md\\\"]}\"",
+          "observed": "{\"isError\":false,\"text\":\"qmd_adaptive_search: 1 result(s)\\n1. docs/ReleaseDecision.md\\n   title: ReleaseDecision | score: 0.68 | source: filename, path\\n   why: —\\n\\nWarnings:\\n- qmd was not found. qmd_adaptive_search can run filename/content fallback, but semantic search needs qmd. Install options: bun add -g @tobilu/qmd npm install -g @tobilu/qmd pnpm add -g @tobilu/qmd yarn global add @tobilu/qmd or configure qmdCommand in .qmd-adaptive-search/config.json: { \\\"qmdCommand\\\": [\\\"node\\\", \\\"path/to/qmd.js\\\"] }\\n\\nBackground jobs: qmd fallback used (use qmd_adaptive_status for details).\",\"resultPaths\":[\"docs/ReleaseDecision.md\"]}",
           "passed": true
         },
         {

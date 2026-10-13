@@ -40,7 +40,7 @@
   "scripts": {
     "ci": "npm run check && npm run version:check",
     "build": "tsc -p tsconfig.json",
-    "test": "npm run build && node --test dist/test/*.test.js scripts/pi-sdk-smoke-contract.test.mjs",
+    "test": "npm run build && node --test dist/test/*.test.js scripts/pi-sdk-smoke-contract.test.mjs tests/release-trigger-contract.test.mjs",
     "smoke": "npm run build && node bin/qmd-adaptive-search.js --help",
     "smoke:pi": "node scripts/pi-sdk-smoke.mjs",
     "check": "npm test && npm run smoke && npm pack --dry-run",

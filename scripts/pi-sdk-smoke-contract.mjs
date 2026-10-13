@@ -146,13 +146,13 @@ export function reloadAssertions(first, second, { commands, toolNames, expectedP
     assertion(
       "reloaded_extension_registered",
       registration.expected,
-      registration.observed,
+      JSON.parse(registration.observed),
       registration.passed,
     ),
     assertion(
       "reloaded_feature_response",
       "The second Pi process executes qmd_adaptive_search and returns the fixture path",
-      feature.observed,
+      JSON.parse(feature.observed),
       feature.passed,
     ),
     assertion(

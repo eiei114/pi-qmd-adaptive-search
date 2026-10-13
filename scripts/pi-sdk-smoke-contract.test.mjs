@@ -85,5 +85,13 @@ test("reload contract fails closed when second-process registration or response 
   assert.equal(missingReloadResponse[0].passed, false);
   assert.equal(missingReloadResponse[1].passed, false);
   assert.equal(shutdownAssertion({ exit_code: 0, output: "", records: [] }).passed, false);
+
+  const observedRegistration = JSON.parse(positive[0].observed);
+  const observedFeature = JSON.parse(positive[1].observed);
+  assert.equal(typeof observedRegistration, "object");
+  assert.equal(observedRegistration.qmdCommandCount, 14);
+  assert.deepEqual(observedRegistration.missingCommands, []);
+  assert.equal(observedFeature.isError, false);
+  assert.deepEqual(observedFeature.resultPaths, ["docs/ReleaseDecision.md"]);
   assert.ok(JSON.parse(positive[2].observed).second.agentSettled);
 });

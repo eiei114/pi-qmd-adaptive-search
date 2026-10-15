@@ -2,10 +2,10 @@
   "schema_version": 1,
   "verification_contract": "pi-sdk-behavior-v2",
   "sdk_versions": {
-    "@earendil-works/pi-agent-core": "1.1.0",
-    "@earendil-works/pi-ai": "1.1.0",
-    "@earendil-works/pi-coding-agent": "1.1.0",
-    "@earendil-works/pi-tui": "1.1.0"
+    "@earendil-works/pi-agent-core": "1.2.0",
+    "@earendil-works/pi-ai": "1.2.0",
+    "@earendil-works/pi-coding-agent": "1.2.0",
+    "@earendil-works/pi-tui": "1.2.0"
   },
   "platform": "win32",
   "model_inference": "none; an isolated deterministic local OpenAI-compatible stream supplies tool calls to the actual Pi host, which loads and executes the real package extension",
@@ -113,12 +113,12 @@
       "command": "npm run smoke:pi",
       "exit_code": 0,
       "passed": true,
-      "evidence": "1.1.0\n",
+      "evidence": "1.2.0\n",
       "assertions": [
         {
           "id": "native_shell_boundary",
           "expected": "Native host shell starts the locally pinned Pi CLI and returns its exact version",
-          "observed": "{\"exit_code\":0,\"output\":\"1.1.0\",\"expectedVersion\":\"1.1.0\"}",
+          "observed": "{\"exit_code\":0,\"output\":\"1.2.0\",\"expectedVersion\":\"1.2.0\"}",
           "passed": true
         }
       ]

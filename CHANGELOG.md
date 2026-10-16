@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Changed
+
+- Pin Pi SDK development and smoke-test dependencies to 1.2.0 while preserving the public peer dependency range.
+
 ### Fixed
 
 - Adapt Pi extension command registrations to the SDK 1.1.0 `void` handler contract.

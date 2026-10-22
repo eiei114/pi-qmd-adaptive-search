@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Use the shared JSONL reader when reviewing pending suggestions.
 - Pin Pi SDK development and smoke-test dependencies to 1.2.0 while preserving the public peer dependency range.
 
 ### Fixed

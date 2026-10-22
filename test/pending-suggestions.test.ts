@@ -44,6 +44,23 @@ test('recordFeedback creates pending suggestion with high confidence after recen
   assert.deepEqual(review.suggestions[0].selectedPaths, ['docs/ProductSpec.md']);
 });
 
+test('reviewSuggestions reads CRLF JSONL and ignores blank lines', () => {
+  const root = tempProject();
+  const suggestions = [
+    { id: 'first', rating: 'good', selectedPaths: ['docs/ProductSpec.md'] },
+    { id: 'second', rating: 'bad', selectedPaths: ['README.md'] }
+  ];
+  fs.writeFileSync(
+    pendingPath(root),
+    `\r\n${JSON.stringify(suggestions[0])}\r\n\r\n${JSON.stringify(suggestions[1])}\r\n`,
+    'utf8'
+  );
+
+  const review = reviewSuggestions({ root });
+  assert.equal(review.count, 2);
+  assert.deepEqual(review.suggestions, suggestions);
+});
+
 test('recordFeedback rejects out-of-band feedback unless force is set', () => {
   const root = tempProject();
   const rejected = recordFeedback({ selectedPath: 'docs/ProductSpec.md', rating: 'good' }, { root });

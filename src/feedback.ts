@@ -2,7 +2,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { initProject, loadConfig, paths } from './config.js';
-import { readJson, writeJson, appendJsonLine, toPosix } from './fs-utils.js';
+import { readJson, readJsonLines, writeJson, appendJsonLine, toPosix } from './fs-utils.js';
 import { tokenize } from './search.js';
 
 function normalizeSelected(input) {
@@ -77,9 +77,7 @@ function reviewSuggestions(options: any = {}) {
   const root = options.root || process.cwd();
   initProject(root);
   const p = paths(root);
-  const suggestions = fs.existsSync(p.pendingSuggestions)
-    ? fs.readFileSync(p.pendingSuggestions, 'utf8').split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line))
-    : [];
+  const suggestions = readJsonLines(p.pendingSuggestions);
   return { count: suggestions.length, suggestions };
 }
 

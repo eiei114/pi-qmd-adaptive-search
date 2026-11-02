@@ -13,6 +13,12 @@ All notable changes to this project will be documented in this file.
 
 - Adapt Pi extension command registrations to the SDK 1.1.0 `void` handler contract.
 
+## [1.4.5] - 2026-11-02
+
+### Fixed
+
+- Read Pi SDK smoke-test versions from the exact development dependency pins.
+
 ## [1.4.1] - 2026-09-30
 
 ### Changed

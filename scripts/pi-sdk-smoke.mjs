@@ -6,13 +6,13 @@ import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import {
   EXTENSION_LOAD_ERROR_PATTERN,
-  SDK_VERSIONS,
   UNHANDLED_ERROR_PATTERN,
   VERIFICATION_CONTRACT,
   extensionCommandAssertion,
   extensionRegistrationAssertion,
   hostShellAssertion,
   reloadAssertions,
+  sdkVersionsFromManifest,
   shutdownAssertion,
   toolResponseAssertion,
 } from "./pi-sdk-smoke-contract.mjs";
@@ -23,19 +23,18 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const reportPath = join(root, "docs", "verification", "pi-sdk-smoke.json");
 const fixturePath = "docs/ReleaseDecision.md";
 const probeTimeoutMs = 15_000;
-const sdkVersions = {};
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
 const manifest = readJson(join(root, "package.json"));
-for (const [name, expected] of Object.entries(SDK_VERSIONS)) {
+const sdkVersions = sdkVersionsFromManifest(manifest);
+for (const [name, expected] of Object.entries(sdkVersions)) {
   const installed = readJson(join(root, "node_modules", name, "package.json")).version;
   if (installed !== expected || manifest.devDependencies?.[name] !== expected) {
     throw new Error(`Smoke requires exact ${name}@${expected}; installed=${installed}, devDependency=${manifest.devDependencies?.[name]}`);
   }
-  sdkVersions[name] = installed;
 }
 
 const piManifest = readJson(join(root, "node_modules", "@earendil-works", "pi-coding-agent", "package.json"));

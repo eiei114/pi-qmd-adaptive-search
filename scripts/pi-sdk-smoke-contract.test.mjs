@@ -4,6 +4,7 @@ import {
   extensionCommandAssertion,
   extensionRegistrationAssertion,
   reloadAssertions,
+  sdkVersionsFromManifest,
   shutdownAssertion,
   toolResponseAssertion,
 } from "./pi-sdk-smoke-contract.mjs";
@@ -22,6 +23,19 @@ const successfulTool = {
     details: { resultPaths: ["docs/ReleaseDecision.md"] },
   },
 };
+
+test("smoke SDK versions follow exact package manifest pins", () => {
+  assert.deepEqual(sdkVersionsFromManifest({
+    devDependencies: {
+      "@earendil-works/pi-ai": "1.4.0",
+      "@earendil-works/pi-coding-agent": "1.2.0",
+      "unrelated-package": "2.0.0",
+    },
+  }), {
+    "@earendil-works/pi-ai": "1.4.0",
+    "@earendil-works/pi-coding-agent": "1.2.0",
+  });
+});
 
 test("feature response requires actual text and structured search results", () => {
   assert.equal(

@@ -1,6 +1,6 @@
 {
   "name": "pi-qmd-adaptive-search",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "description": "Project-local semantic file discovery with qmd, fallback search, and local adaptive feedback.",
   "type": "module",
   "keywords": [
@@ -54,7 +54,7 @@
   "license": "MIT",
   "devDependencies": {
     "@earendil-works/pi-agent-core": "1.2.0",
-    "@earendil-works/pi-ai": "1.2.0",
+    "@earendil-works/pi-ai": "1.4.0",
     "@earendil-works/pi-coding-agent": "1.2.0",
     "@earendil-works/pi-tui": "1.2.0",
     "@types/node": "^26.6.6",

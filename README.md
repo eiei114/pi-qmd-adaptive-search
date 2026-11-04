@@ -190,6 +190,8 @@ Missing qmd is supported. Search still:
 - applies ranking guardrails so low-information learned aliases and runaway learned boosts cannot drown out lexical relevance;
 - returns JSON `results`, plus a warning beginning with `qmd was not found.` and install/config guidance.
 
+Content scoring is bounded to the first 20,000 characters of each candidate file. Fallback search reads only the bytes that prefix can occupy instead of loading whole files, so a vault with large notes is not slowed down by multi-megabyte transcripts whose tail is never scored.
+
 Expected trade-off: fallback search is lexical, not semantic. It is useful for file discovery and obvious content matches, but vague intent-based queries improve when qmd is installed and indexed.
 
 ### Ranking guardrails
@@ -571,6 +573,7 @@ Common causes:
 
 - file extension is not in `fileGlobs`;
 - path matches `excludeGlobs` such as `dist/**`, `build/**`, `coverage/**`, `node_modules/**`, or `*.lock`;
+- the matching text sits past the first 20,000 characters of the file;
 - query is too vague for fallback mode and qmd is not installed/indexed;
 - qmd output did not include parseable project-relative paths.
 

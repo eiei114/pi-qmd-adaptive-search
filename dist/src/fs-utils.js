@@ -26,6 +26,45 @@ function walkFiles(root, include = (_rel) => true, dir = root, output = []) {
     }
     return output;
 }
+// Every UTF-8 character costs at most 4 bytes, and 4 spare bytes keep a truncated
+// multi-byte sequence out of the window we decode.
+const MAX_UTF8_BYTES_PER_CHAR = 4;
+const CONTENT_SAMPLE_CHARS = 20000;
+let prefixScratchBuffer = null;
+/**
+ * Read the first `charLimit` characters of a UTF-8 file without reading the rest.
+ *
+ * Fallback search scores only a short prefix of each candidate file. Reading a
+ * complete multi-megabyte note for that prefix dominated the search time, so the
+ * read is bounded to the bytes that prefix can occupy. The result is identical to
+ * `fs.readFileSync(file, 'utf8').slice(0, charLimit)`.
+ *
+ * The scratch buffer is reused across files: allocating a fresh 80 KiB buffer per
+ * candidate measurably dominated the pass on a vault with thousands of notes.
+ * Only the `filled` slice is decoded, so stale bytes from a previous file are never
+ * observed.
+ */
+function readUtf8Prefix(file, charLimit = CONTENT_SAMPLE_CHARS) {
+    const byteLimit = charLimit * MAX_UTF8_BYTES_PER_CHAR + MAX_UTF8_BYTES_PER_CHAR;
+    if (!prefixScratchBuffer || prefixScratchBuffer.length < byteLimit) {
+        prefixScratchBuffer = Buffer.allocUnsafe(byteLimit);
+    }
+    const buffer = prefixScratchBuffer;
+    const fd = fs.openSync(file, 'r');
+    try {
+        let filled = 0;
+        while (filled < byteLimit) {
+            const read = fs.readSync(fd, buffer, filled, byteLimit - filled, filled);
+            if (read === 0)
+                break;
+            filled += read;
+        }
+        return buffer.toString('utf8', 0, filled).slice(0, charLimit);
+    }
+    finally {
+        fs.closeSync(fd);
+    }
+}
 function ensureDir(dir) {
     fs.mkdirSync(dir, { recursive: true });
 }
@@ -90,5 +129,5 @@ function deepMerge(base, patch) {
     }
     return output;
 }
-export { toPosix, projectPath, walkFiles, ensureDir, readJson, writeJson, appendJsonLine, readJsonLines, updateGitignore, deepMerge };
+export { toPosix, projectPath, walkFiles, ensureDir, readJson, writeJson, appendJsonLine, readJsonLines, updateGitignore, deepMerge, readUtf8Prefix, CONTENT_SAMPLE_CHARS };
 //# sourceMappingURL=fs-utils.js.map

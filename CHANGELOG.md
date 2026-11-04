@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 
 - Use the shared JSONL reader when reviewing pending suggestions.
 - Pin Pi SDK development and smoke-test dependencies to 1.2.0 while preserving the public peer dependency range.
+- Read only the scored prefix of each candidate file during fallback search instead of loading whole files. Content scoring was already bounded to 20,000 characters, so the bounded read returns identical scores while cutting bytes read on a large vault by about 4x.
+
+### Added
+
+- `npm run bench:fallback` measures the fallback walk-and-score hot path on a generated fixture.
 
 ### Fixed
 

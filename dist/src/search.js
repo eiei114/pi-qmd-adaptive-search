@@ -3,7 +3,7 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { initProject, loadConfig, paths } from './config.js';
 import { qmdSearch, installInstructions } from './qmd.js';
-import { readJson, writeJson, toPosix, walkFiles as walkProjectFiles } from './fs-utils.js';
+import { readJson, writeJson, toPosix, walkFiles as walkProjectFiles, readUtf8Prefix } from './fs-utils.js';
 import { backgroundJobStatusSummary, finishQmdSearchJob, readJobState, startQmdSearchJob } from './job-state.js';
 import { expandAliasTerms, effectiveBoostValue } from './ranking-guardrails.js';
 const TEXT_EXTS = new Set(['.md', '.txt', '.ts', '.tsx', '.js', '.py', '.json', '.yaml', '.yml']);
@@ -141,7 +141,7 @@ function scoreFile(root, rel, terms, scopeHints, mode, boostEntries) {
     }
     if (score < 0.01) {
         try {
-            const sample = fs.readFileSync(path.join(root, rel), 'utf8').slice(0, 20000).toLowerCase();
+            const sample = readUtf8Prefix(path.join(root, rel)).toLowerCase();
             for (const term of terms)
                 if (sample.includes(term)) {
                     score += 0.08;

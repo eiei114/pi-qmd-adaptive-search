@@ -11,6 +11,9 @@
 //                                          [--tail-ratio 0.05] [--tail-kb 1024]
 //                                          [--early-match-ratio 0.05] [--late-match-ratio 0.1]
 //                                          [--runs 5] [--terms product,export,decision]
+//
+// --runs must be a positive integer. The guard runs before the fixture is built, so an
+// invalid value exits without creating a temporary directory.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -89,6 +92,23 @@ function buildFixture(root, options) {
 }
 
 const options = parseArgs(process.argv.slice(2));
+
+// A run count of zero (or a negative/non-numeric value) would leave `samples` empty, so
+// there is no median to report. Reject it before mkdtempSync so the process neither throws
+// inside the report nor leaves a temporary fixture behind.
+function invalidRunsMessage(runs) {
+  if (Number.isInteger(runs) && runs > 0) return null;
+  const shown = Number.isNaN(runs) ? 'a non-numeric value' : String(runs);
+  return `--runs must be a positive integer, got ${shown}`;
+}
+
+const invalidRuns = invalidRunsMessage(options.runs);
+if (invalidRuns) {
+  console.error(`bench-fallback-scoring: ${invalidRuns}`);
+  console.error('No fixture was created. Pass --runs <positive integer>, for example --runs 5.');
+  process.exit(1);
+}
+
 const workdir = fs.mkdtempSync(path.join(os.tmpdir(), 'qmd-bench-'));
 const root = path.join(workdir, 'fixture');
 fs.mkdirSync(root, { recursive: true });

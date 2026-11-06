@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Use the shared JSONL reader when reviewing pending suggestions.
-- Pin Pi SDK development and smoke-test dependencies to 1.2.0 while preserving the public peer dependency range.
+- Bump `pi-qmd-adaptive-search` to 1.4.7 and pin Pi SDK development and smoke-test dependencies to 1.5.0 while preserving the public peer dependency range.
 - Read only the scored prefix of each candidate file during fallback search instead of loading whole files. Content scoring was already bounded to 20,000 characters, so the bounded read returns identical scores while cutting bytes read on a large vault by about 4x.
 
 ### Added

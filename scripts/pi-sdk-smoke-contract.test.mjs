@@ -27,13 +27,17 @@ const successfulTool = {
 test("smoke SDK versions follow exact package manifest pins", () => {
   assert.deepEqual(sdkVersionsFromManifest({
     devDependencies: {
-      "@earendil-works/pi-ai": "1.4.0",
-      "@earendil-works/pi-coding-agent": "1.2.0",
+      "@earendil-works/pi-agent-core": "1.5.0",
+      "@earendil-works/pi-ai": "1.5.0",
+      "@earendil-works/pi-coding-agent": "1.5.0",
+      "@earendil-works/pi-tui": "1.5.0",
       "unrelated-package": "2.0.0",
     },
   }), {
-    "@earendil-works/pi-ai": "1.4.0",
-    "@earendil-works/pi-coding-agent": "1.2.0",
+    "@earendil-works/pi-agent-core": "1.5.0",
+    "@earendil-works/pi-ai": "1.5.0",
+    "@earendil-works/pi-coding-agent": "1.5.0",
+    "@earendil-works/pi-tui": "1.5.0",
   });
 });
 

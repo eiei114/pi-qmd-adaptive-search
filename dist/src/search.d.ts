@@ -7,6 +7,7 @@ declare function scoreFile(root: any, rel: any, terms: any, scopeHints: any, mod
     source: any[];
     why: any[];
 };
+declare function normalizedMaxResults(value: any, config?: any): number;
 type RankedCandidate = {
     path: string;
     score: number;
@@ -39,4 +40,4 @@ declare function adaptiveSearch(input: any, options?: any): {
     };
     readOnly: boolean;
 };
-export { adaptiveSearch, inferMode, tokenize, walkFiles, globToRegex, scoreFile, rrfFuseCandidates };
+export { adaptiveSearch, inferMode, tokenize, walkFiles, globToRegex, scoreFile, rrfFuseCandidates, normalizedMaxResults };

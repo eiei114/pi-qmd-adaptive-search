@@ -17,4 +17,3 @@ Remaining high-value gaps:
 
 - `src/cli.ts` has no automated command-level coverage; CLI argument parsing, dry-run/confirmation messages, and non-zero exit paths should be exercised with child-process tests.
 - `applyPreset`/configuration reset and dry-run behavior is lightly covered indirectly, but not asserted as a public API.
-- `qmdOperationPlan` covers setup well, but update/embed plan variants (`force`, missing qmd warnings, unknown operation errors) still need focused regression tests.

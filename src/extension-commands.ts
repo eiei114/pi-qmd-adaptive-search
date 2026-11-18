@@ -1,6 +1,7 @@
 import { Type } from 'typebox';
 import {
   adaptiveSearch,
+  normalizedMaxResults,
   recordFeedback,
   adaptiveStatus,
   initProject,
@@ -78,7 +79,7 @@ function normalizeSearchToolParams(params: {
     ...params,
     ...(params.mode != null ? { mode: params.mode } : {}),
     ...(params.maxResults != null
-      ? { maxResults: Math.min(Math.max(Math.trunc(params.maxResults), 1), 30) }
+      ? { maxResults: normalizedMaxResults(params.maxResults) }
       : {})
   };
 }

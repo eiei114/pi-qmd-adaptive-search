@@ -498,3 +498,33 @@ test('informative learned aliases still help durable project vocabulary', () => 
   assert.ok(result.results[0].why.some((line) => String(line).includes('matched alias: portability')));
   assert.ok(result.results[0].why.some((line) => String(line).includes('learned boost: docs/ProductSpec.md')));
 });
+
+test('adaptiveSearch clamps invalid and fractional maxResults instead of returning empty', () => {
+  const root = tempProject();
+  configureFakeQmd(root, { searchStatus: 1, searchStderr: 'skip qmd for maxResults normalization' });
+
+  for (const maxResults of [-1, -5, 'abc', 1.9, Number.NaN]) {
+    const result = adaptiveSearch({ query: 'product decisions', maxResults }, { root });
+    assert.ok(result.results.length > 0, `expected non-empty results for maxResults=${String(maxResults)}`);
+  }
+
+  const fractional = adaptiveSearch({ query: 'product decisions', maxResults: 1.9 }, { root });
+  assert.ok(fractional.results.length <= 1, 'expected fractional maxResults to be truncated before capping');
+});
+
+test('adaptiveSearch caps oversized maxResults at the hard maximum', () => {
+  const root = tempProject();
+  configureFakeQmd(root, { searchStatus: 1, searchStderr: 'skip qmd for maxResults hard cap' });
+  for (let i = 0; i < 35; i++) {
+    fs.writeFileSync(
+      path.join(root, 'docs', `max-results-${i}.md`),
+      'max results normalization hard cap sentinel',
+      'utf8'
+    );
+  }
+
+  const result = adaptiveSearch({ query: 'max results normalization hard cap sentinel', maxResults: 31 }, { root });
+
+  assert.ok(result.results.length > 0, 'expected matching results for an oversized maxResults value');
+  assert.equal(result.results.length, 30, 'expected results to be capped at the hard maximum of 30');
+});

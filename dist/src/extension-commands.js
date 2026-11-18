@@ -1,5 +1,5 @@
 import { Type } from 'typebox';
-import { adaptiveSearch, recordFeedback, adaptiveStatus, initProject, applyPreset, reviewSuggestions, approveSuggestions, installInstructions, qmdOperationPlan, runQmdOperation, maintenancePlan, runMaintenance } from './index.js';
+import { adaptiveSearch, normalizedMaxResults, recordFeedback, adaptiveStatus, initProject, applyPreset, reviewSuggestions, approveSuggestions, installInstructions, qmdOperationPlan, runQmdOperation, maintenancePlan, runMaintenance } from './index.js';
 import { formatAdaptiveSearchToolResult } from './search-result-format.js';
 export const QMD_A_COLON_COMMANDS = [
     'qmd-a:init',
@@ -34,7 +34,7 @@ function normalizeSearchToolParams(params) {
         ...params,
         ...(params.mode != null ? { mode: params.mode } : {}),
         ...(params.maxResults != null
-            ? { maxResults: Math.min(Math.max(Math.trunc(params.maxResults), 1), 30) }
+            ? { maxResults: normalizedMaxResults(params.maxResults) }
             : {})
     };
 }

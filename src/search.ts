@@ -154,6 +154,19 @@ function scoreFile(root, rel, terms, scopeHints, mode, boostEntries) {
   return { score: Math.max(0, score), source: Array.from(new Set(source)), why };
 }
 
+function normalizedMaxResults(value, config?: any) {
+  const hardMaxRaw = Number(config?.search?.hardMaxResults ?? 30);
+  const hardMax = Number.isFinite(hardMaxRaw) ? Math.max(1, Math.trunc(hardMaxRaw)) : 30;
+  const defaultRaw = Number(config?.search?.defaultMaxResults ?? 10);
+  const defaultMax = Number.isFinite(defaultRaw)
+    ? Math.min(Math.max(1, Math.trunc(defaultRaw)), hardMax)
+    : Math.min(10, hardMax);
+  if (value == null || value === '') return defaultMax;
+  const n = Number(value);
+  if (!Number.isFinite(n)) return defaultMax;
+  return Math.min(Math.max(Math.trunc(n), 1), hardMax);
+}
+
 type RankedCandidate = {
   path: string;
   score: number;
@@ -207,7 +220,7 @@ function adaptiveSearch(input, options: any = {}) {
   if (!readOnly) initProject(root);
   const config = loadConfig(root, { readOnly });
   const warnings = [];
-  const maxResults = Math.min(Number(input.maxResults || config.search.defaultMaxResults || 10), Number(config.search.hardMaxResults || 30));
+  const maxResults = normalizedMaxResults(input.maxResults, config);
   const mode = inferMode(input.query, input.mode || config.search.defaultModeBias || 'auto');
   const scopeHints = Array.isArray(input.scopeHint) ? input.scopeHint : (input.scopeHint ? [input.scopeHint] : []);
   const queryTerms = tokenize(input.query);
@@ -252,4 +265,4 @@ function adaptiveSearch(input, options: any = {}) {
   return { results, warnings, backgroundJobStatus, readOnly };
 }
 
-export { adaptiveSearch, inferMode, tokenize, walkFiles, globToRegex, scoreFile, rrfFuseCandidates };
+export { adaptiveSearch, inferMode, tokenize, walkFiles, globToRegex, scoreFile, rrfFuseCandidates, normalizedMaxResults };

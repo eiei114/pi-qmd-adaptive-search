@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { adaptiveSearch, recordFeedback, reviewSuggestions, approveSuggestions, adaptiveStatus, initProject, qmdOperationPlan, runQmdOperation } from '../src/index.js';
+import { adaptiveSearch, recordFeedback, reviewSuggestions, approveSuggestions, adaptiveStatus, initProject, installInstructions, qmdOperationPlan, runQmdOperation } from '../src/index.js';
 import { detectQmd, parseQmdSearchOutput } from '../src/qmd.js';
 import { walkFiles } from '../src/fs-utils.js';
 
@@ -231,6 +231,56 @@ test('qmd setup plan shows target side effects and confirmation command', () => 
   assert.ok(plan.sideEffects.some((item) => item.includes('collection')));
   assert.equal(plan.dryRunCommand, 'qmd-adaptive-search qmd setup --dry-run');
   assert.equal(plan.confirmCommand, 'qmd-adaptive-search qmd setup --yes');
+});
+
+test('qmd update plan shows its command, re-index side effects, target, and estimate', () => {
+  const root = tempProject();
+  const plan = qmdOperationPlan('update', {}, { root, qmd: { available: true, command: ['qmd'] } });
+
+  assert.deepEqual(plan.command, ['qmd', 'update']);
+  assert.equal(plan.target, 'all qmd collections unless qmd config narrows the scope');
+  assert.deepEqual(plan.sideEffects, [
+    'qmd re-indexes changed files',
+    'qmd local index metadata may be rewritten',
+    'new or changed documents may become pending for embedding'
+  ]);
+  assert.equal(plan.estimatedTime, 'minutes on medium projects; longer on large document sets');
+});
+
+test('qmd embed plans distinguish regular and forced embedding', () => {
+  const root = tempProject();
+  const qmd = { available: true, command: ['qmd'] };
+  const regularPlan = qmdOperationPlan('embed', {}, { root, qmd });
+  const forcedPlan = qmdOperationPlan('embed', { force: true }, { root, qmd });
+
+  assert.deepEqual(regularPlan.command, ['qmd', 'embed']);
+  assert.equal(regularPlan.target, 'qmd chunks missing embeddings');
+  assert.deepEqual(forcedPlan.command, ['qmd', 'embed', '-f']);
+  assert.equal(forcedPlan.target, 'all qmd chunks (force re-embed)');
+  assert.deepEqual(forcedPlan.sideEffects, [
+    'qmd downloads or loads embedding model if needed',
+    'qmd writes vector embeddings to its local index',
+    'CPU/GPU and disk activity can be high during embedding'
+  ]);
+  assert.equal(regularPlan.estimatedTime, 'minutes to much longer, depending on corpus size and model');
+  assert.equal(forcedPlan.estimatedTime, regularPlan.estimatedTime);
+});
+
+test('qmd plan warns with install instructions and falls back to the qmd command when unavailable', () => {
+  const root = tempProject();
+  const plan = qmdOperationPlan('embed', {}, { root, qmd: { available: false, command: ['missing-qmd'] } });
+
+  assert.deepEqual(plan.command, ['qmd', 'embed']);
+  assert.deepEqual(plan.warnings, [installInstructions()]);
+});
+
+test('qmd plan rejects unknown operations with the supported operation list', () => {
+  const root = tempProject();
+
+  assert.throws(
+    () => qmdOperationPlan('purge', {}, { root, qmd: { available: true, command: ['qmd'] } }),
+    { message: 'Unknown qmd operation: purge. Use one of: setup, update, embed' }
+  );
 });
 
 test('qmd operation dry run does not execute heavy command', () => {

@@ -206,6 +206,42 @@ test('CLI feedback without --selected exits with code 1', () => {
   assert.match(stderr, /--selected is required/);
 });
 
+test('CLI feedback records trimmed selected paths and requested rating', (t) => {
+  const root = tempDir('feedback-success');
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+
+  const { stdout, status, stderr } = spawnCli(
+    ['feedback', '--selected', '  docs/Architecture.md , docs/ReleasePlan.md  ', '--rating', 'good', '--force'],
+    { cwd: root }
+  );
+
+  assert.equal(status, 0, stderr);
+  const result = JSON.parse(stdout);
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.selectedPaths, ['docs/Architecture.md', 'docs/ReleasePlan.md']);
+  assert.match(result.warnings[0], /accepted forced feedback/);
+
+  const localDir = path.join(root, '.qmd-adaptive-search', 'local');
+  const learnedBoosts = JSON.parse(fs.readFileSync(path.join(localDir, 'learned-boosts.json'), 'utf8'));
+  assert.deepEqual(learnedBoosts.boosts, {
+    'docs/Architecture.md': 0.03,
+    'docs/ReleasePlan.md': 0.03
+  });
+
+  const learnedAliases = JSON.parse(fs.readFileSync(path.join(localDir, 'learned-aliases.json'), 'utf8'));
+  assert.deepEqual(learnedAliases.aliases.docs, ['architecture', 'releaseplan']);
+
+  const pending = fs.readFileSync(path.join(localDir, 'pending-suggestions.jsonl'), 'utf8')
+    .trim()
+    .split(/\r?\n/)
+    .map((line) => JSON.parse(line));
+  assert.equal(pending.length, 1);
+  assert.equal(pending[0].type, 'positive-feedback');
+  assert.equal(pending[0].rating, 'good');
+  assert.deepEqual(pending[0].selectedPaths, ['docs/Architecture.md', 'docs/ReleasePlan.md']);
+  assert.equal(pending[0].confidence, 0.25);
+});
+
 test('CLI search with empty query string exits with code 1', () => {
   const { stderr, status } = spawnCli(['search', '']);
   assert.equal(status, 1);

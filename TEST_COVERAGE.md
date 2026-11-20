@@ -12,8 +12,8 @@ Targeted additions made:
 
 - Forced positive feedback review/approval now verifies low-confidence feedback can be promoted into shared aliases and boosts, then clears pending suggestions.
 - Failed confirmed qmd operations now verify failed job state and recovery hints are recorded for status output.
+- Direct public-API tests verify `applyPreset` reset behavior against customized configuration and dry-run preservation of the exact config bytes.
 
 Remaining high-value gaps:
 
 - `src/cli.ts` has no automated command-level coverage; CLI argument parsing, dry-run/confirmation messages, and non-zero exit paths should be exercised with child-process tests.
-- `applyPreset`/configuration reset and dry-run behavior is lightly covered indirectly, but not asserted as a public API.

@@ -310,6 +310,34 @@ test('CLI qmd setup --dry-run shows plan without executing', () => {
   assert.equal(payload.plan.operation, 'setup');
 });
 
+for (const operation of ['update', 'embed']) {
+  test(`CLI qmd ${operation} --dry-run shows the plan without running the operation`, (t) => {
+    const root = tempDir(`qmd-${operation}-dry`);
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+
+    const marker = path.join(root, 'qmd-operation.txt');
+    const stub = path.join(root, 'qmd-stub.cjs');
+    // Plan generation probes `status`; record any command beyond that probe.
+    fs.writeFileSync(stub, `
+      const command = process.argv[2];
+      if (command !== 'status') require('node:fs').writeFileSync(${JSON.stringify(marker)}, command ?? '(no command)');
+    `);
+    const qmdCommand = [process.execPath, stub];
+    const configDir = path.join(root, '.qmd-adaptive-search');
+    fs.mkdirSync(configDir);
+    fs.writeFileSync(path.join(configDir, 'config.json'), JSON.stringify({ qmdCommand }));
+
+    const { stdout, status, stderr } = spawnCli(['qmd', operation, '--dry-run'], { cwd: root });
+
+    assert.equal(status, 0, stderr);
+    const { plan } = JSON.parse(stdout);
+    assert.equal(plan.operation, operation);
+    assert.equal(plan.qmdAvailable, true);
+    assert.deepEqual(plan.qmdCommand, qmdCommand);
+    assert.equal(fs.existsSync(marker), false, `dry run must not execute qmd ${operation}`);
+  });
+}
+
 /* ── CLI init and status ──────────────────────────────────────────────── */
 
 test('CLI init creates project config', () => {

@@ -38,7 +38,7 @@ declare function startQmdSearchJob(root: any, input?: any): {
 };
 declare function finishQmdSearchJob(root: any, runningJob: any, qmdResult?: any): any;
 declare function backgroundJobStatusSummary(state: any): {
-    pendingCount: any;
+    pendingCount: number;
     failedCount: any;
     running: boolean;
     lastSearchStatus: any;

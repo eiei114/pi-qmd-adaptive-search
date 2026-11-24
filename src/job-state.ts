@@ -86,11 +86,11 @@ function startBackgroundJob(root, input: any = {}) {
     recoveryHint: recoveryHintFor({ status: 'running' })
   };
 
-  const pendingJobs = [
+  const pendingJobs = uniqueJobs([
     ...(state.currentJob && !TERMINAL_STATUSES.has(state.currentJob.status) ? [state.currentJob] : []),
-    ...(state.pendingJobs || []).filter((pending) => pending.id !== job.id),
+    ...state.pendingJobs,
     job
-  ];
+  ]);
 
   writeJobState(root, { ...state, currentJob: job, pendingJobs });
   return job;
@@ -159,7 +159,7 @@ function uniqueJobs(jobs) {
   for (const job of jobs.filter(Boolean)) {
     if (seen.has(job.id)) continue;
     seen.add(job.id);
-    out.push(compactJob(job));
+    out.push(job);
   }
   return out;
 }
@@ -167,7 +167,7 @@ function uniqueJobs(jobs) {
 function backgroundJobStatusSummary(state) {
   const normalized = normalizeJobState(state);
   const currentJob = normalized.currentJob;
-  const pendingJobs = (normalized.pendingJobs || []).filter((pending) => pending.id !== currentJob?.id);
+  const pendingJobs = uniqueJobs(normalized.pendingJobs).filter((pending) => pending.id !== currentJob?.id);
   const running = currentJob?.status === 'running';
   const pendingCount = pendingJobs.length + (running ? 1 : 0);
   const failedCount = (normalized.failedJobs || []).length;
@@ -192,6 +192,7 @@ function backgroundJobSummary(state) {
     normalized.lastJob,
     ...(normalized.failedJobs || [])
   ])
+    .map(compactJob)
     .filter((job) => job.recoveryHint)
     .map((job) => ({ jobId: job.id, type: job.type, status: job.status, hint: job.recoveryHint }));
 

@@ -31,7 +31,7 @@ declare function adaptiveSearch(input: any, options?: any): {
     }[];
     warnings: any[];
     backgroundJobStatus: {
-        pendingCount: any;
+        pendingCount: number;
         failedCount: any;
         running: boolean;
         lastSearchStatus: any;

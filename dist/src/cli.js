@@ -100,9 +100,11 @@ async function runCli(argv) {
     }
     if (command === 'feedback' || command === 'qmd_search_feedback') {
         const selected = args.selected || args.selectedPath || args.selectedPaths || args._[1];
-        if (!selected)
-            throw new Error('--selected is required');
-        return printJson(recordFeedback({ selectedPaths: selected.split(',').map((s) => s.trim()).filter(Boolean), rating: args.rating || 'good', force: !!args.force }));
+        const selectedPaths = typeof selected === 'string' ? selected.split(',').map((s) => s.trim()).filter(Boolean) : [];
+        if (selectedPaths.length === 0) {
+            throw new Error('--selected is required; pass at least one path (e.g. --selected docs/Guide.md)');
+        }
+        return printJson(recordFeedback({ selectedPaths, rating: args.rating || 'good', force: !!args.force }));
     }
     if (command === 'review' || command === '/qmd-adaptive-review') {
         if (args.approve)

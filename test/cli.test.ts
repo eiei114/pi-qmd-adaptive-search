@@ -206,13 +206,55 @@ test('CLI feedback without --selected exits with code 1', () => {
   assert.match(stderr, /--selected is required/);
 });
 
+for (const [label, selectionArgs] of [
+  ['valueless', ['--selected']],
+  ['empty', ['--selected', '']],
+  ['delimiter-only', ['--selected', ' , ,  ']]
+] as const) {
+  test(`CLI rejects ${label} --selected without recording feedback`, (t) => {
+    const root = tempDir('feedback-invalid');
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+
+    const { stdout, stderr, status } = spawnCli(
+      ['feedback', '--force', ...selectionArgs],
+      { cwd: root, env: { PATH: root, Path: root } }
+    );
+
+    assert.equal(status, 1);
+    assert.match(stderr, /--selected is required; pass at least one path/);
+    assert.equal(stdout, '');
+    assert.deepEqual(fs.readdirSync(root), []);
+  });
+}
+
+for (const selectionArgs of [
+  ['--selectedPath', 'docs/One.md,docs/Two.md'],
+  ['--selectedPaths', 'docs/One.md,docs/Two.md'],
+  ['docs/One.md,docs/Two.md']
+]) {
+  test(`CLI qmd_search_feedback accepts ${selectionArgs[0]}`, (t) => {
+    const root = tempDir('feedback-alias');
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+
+    const { stdout, stderr, status } = spawnCli(
+      ['qmd_search_feedback', ...selectionArgs, '--force'],
+      { cwd: root, env: { PATH: root, Path: root } }
+    );
+
+    assert.equal(status, 0, stderr);
+    const result = JSON.parse(stdout);
+    assert.equal(result.ok, true);
+    assert.deepEqual(result.selectedPaths, ['docs/One.md', 'docs/Two.md']);
+  });
+}
+
 test('CLI feedback records trimmed selected paths and requested rating', (t) => {
   const root = tempDir('feedback-success');
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
 
   const { stdout, status, stderr } = spawnCli(
     ['feedback', '--selected', '  docs/Architecture.md , docs/ReleasePlan.md  ', '--rating', 'good', '--force'],
-    { cwd: root }
+    { cwd: root, env: { PATH: root, Path: root } }
   );
 
   assert.equal(status, 0, stderr);
